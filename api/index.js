@@ -30,12 +30,16 @@ app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_pets_key';
 
-// Configurar Web Push
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@pets.com',
-  process.env.VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-);
+// Configurar Web Push (Sólo si están las claves)
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || 'mailto:admin@pets.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+} else {
+  console.warn('⚠️ Web Push no configurado: Faltan las variables VAPID_PUBLIC_KEY o VAPID_PRIVATE_KEY.');
+}
 
 // Configurar Cloudinary
 cloudinary.config({
