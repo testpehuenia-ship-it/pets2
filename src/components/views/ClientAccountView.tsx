@@ -244,7 +244,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
           {/* Pet Cover Banner */}
           <div className="h-44 sm:h-52 w-full relative">
             <img
-              src={activePet.coverPhoto || CLINIC_IMAGES.petMaxPark}
+              src={activePet.coverPhoto || activePet.photo || CLINIC_IMAGES.petMaxPark}
               alt={activePet.name}
               className="w-full h-full object-cover"
             />
@@ -254,7 +254,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                 {activePet.name}
               </h2>
               <p className="text-xs text-white/90 font-medium">
-                {activePet.breed} • Microchip: {activePet.microchip || 'Registrado'}
+                {activePet.breed} • Microchip: {activePet.microchip || 'No Registrado'}
               </p>
             </div>
           </div>
@@ -285,7 +285,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                   Peso
                 </span>
                 <span className="font-headline font-bold text-sm text-[#1b1c1c]">
-                  {activePet.weight}
+                  {activePet.weight || 'N/A'}
                 </span>
               </div>
             </div>
@@ -305,9 +305,14 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
               </div>
 
               <ul className="space-y-2">
-                {activePet.vaccines.map((vac) => {
-                  const isCompleted = vac.status === 'completa';
-                  return (
+                {(activePet.vaccines || []).length === 0 ? (
+                  <li className="text-xs text-gray-500 italic p-2 text-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    No hay vacunas registradas
+                  </li>
+                ) : (
+                  (activePet.vaccines || []).map((vac) => {
+                    const isCompleted = vac.status === 'completa';
+                    return (
                     <li
                       key={vac.id}
                       onClick={() => handleToggleVaccine(vac.id)}
@@ -349,7 +354,8 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                       </span>
                     </li>
                   );
-                })}
+                })
+                )}
               </ul>
             </div>
 
