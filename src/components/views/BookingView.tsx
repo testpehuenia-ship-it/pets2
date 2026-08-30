@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
-import { Appointment, StaffMember } from '../../types';
+import { Appointment, StaffMember, Pet } from '../../types';
 import { INITIAL_STAFF } from '../../data/initialData';
 
 interface BookingViewProps {
+  pets?: Pet[];
   initialDoctorId?: string | null;
   onBookingConfirmed: (newApt: Appointment) => void;
   onGoToAccount: () => void;
 }
 
 export const BookingView: React.FC<BookingViewProps> = ({
+  pets = [],
   initialDoctorId,
   onBookingConfirmed,
   onGoToAccount,
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedAnimal, setSelectedAnimal] = useState<string>('Perro');
+  const [showOtherAnimal, setShowOtherAnimal] = useState<boolean>(false);
   const [selectedService, setSelectedService] = useState<string>('Consulta General');
   
   // Find initial doctor if passed
@@ -163,21 +166,54 @@ END:VCALENDAR`;
               <h2 className="font-headline text-lg font-bold text-[#1b1c1c] mb-3">
                 ¿Para quién es la cita?
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {animalOptions.map((item) => {
-                  const isSelected = selectedAnimal === item.label;
-                  return (
+              
+              {pets.length > 0 && !showOtherAnimal ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {pets.map((pet) => (
                     <button
-                      key={item.label}
+                      key={pet.id}
                       type="button"
-                      onClick={() => setSelectedAnimal(item.label)}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all text-center group ${
-                        isSelected
-                          ? 'border-[#436900] bg-[#c7f173]/25 ring-2 ring-[#8fc63d]/30 font-bold shadow-xs'
-                          : 'border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900] text-[#1b1c1c]'
-                      }`}
+                      onClick={() => {
+                        setSelectedAnimal(pet.name);
+                        setCurrentStep(2); // Auto advance
+                      }}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900] transition-all group"
                     >
-                      <span
+                      <div className="w-14 h-14 rounded-full overflow-hidden mb-2 border-2 border-transparent group-hover:border-[#8fc63d]">
+                        <img src={pet.photo || pet.coverPhoto || '/vite.svg'} alt={pet.name} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="font-bold text-sm text-[#1b1c1c] group-hover:text-[#436900] truncate w-full px-1">{pet.name}</span>
+                    </button>
+                  ))}
+                  
+                  {/* Otra mascota button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowOtherAnimal(true)}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-[#737a66] bg-[#f6f3f2] hover:bg-[#eae8e7] hover:border-[#436900] transition-all group"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-[#737a66] group-hover:text-[#436900]">add</span>
+                    </div>
+                    <span className="font-bold text-sm text-[#737a66] group-hover:text-[#436900]">Otra mascota</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {animalOptions.map((item) => {
+                    const isSelected = selectedAnimal === item.label;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => setSelectedAnimal(item.label)}
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all text-center group ${
+                          isSelected
+                            ? 'border-[#436900] bg-[#c7f173]/25 ring-2 ring-[#8fc63d]/30 font-bold shadow-xs'
+                            : 'border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900] text-[#1b1c1c]'
+                        }`}
+                      >
+                        <span
                         className={`material-symbols-outlined text-4xl mb-1.5 transition-transform group-hover:scale-110 ${
                           item.color
                         } ${isSelected ? 'filled' : ''}`}
@@ -191,6 +227,7 @@ END:VCALENDAR`;
                   );
                 })}
               </div>
+              )}
             </div>
 
             <div>

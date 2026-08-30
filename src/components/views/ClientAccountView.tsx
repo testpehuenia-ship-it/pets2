@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pet, Appointment, VaccineRecord } from '../../types';
 import { CLINIC_IMAGES } from '../../data/initialData';
+import { ImageCropperModal } from '../ImageCropperModal';
 
 interface ClientAccountViewProps {
   user: any;
@@ -25,7 +26,9 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
   const [newPetSpecies, setNewPetSpecies] = useState<'Canino' | 'Felino' | 'Equino' | 'Bovino'>('Canino');
   const [newPetBreed, setNewPetBreed] = useState('');
   const [newPetAge, setNewPetAge] = useState('');
-  const [newPetPhoto, setNewPetPhoto] = useState<File | null>(null);
+  const [newPetPhoto, setNewPetPhoto] = useState<Blob | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [rawImageToCrop, setRawImageToCrop] = useState<string | null>(null);
 
   const activePet = pets.find((p) => p.id === selectedPetId) || pets[0];
 
@@ -64,6 +67,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
     setNewPetBreed('');
     setNewPetAge('');
     setNewPetPhoto(null);
+    setPhotoPreview(null);
   };
 
   return (
@@ -475,12 +479,39 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                 <label className="block text-xs font-bold text-[#434938] mb-1">
                   Foto de la Mascota
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setNewPetPhoto(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-[#1b1c1c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#c7f173] file:text-[#324f00] hover:file:bg-[#8fc63d]"
-                />
+                
+                {photoPreview ? (
+                  <div className="relative w-20 h-20 mb-2 group">
+                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover rounded-full border-2 border-[#8fc63d]" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewPetPhoto(null);
+                        setPhotoPreview(null);
+                      }}
+                      className="absolute inset-0 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                    >
+                      <span className="material-symbols-outlined text-xl">delete</span>
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setRawImageToCrop(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                        e.target.value = '';
+                      }
+                    }}
+                    className="w-full text-xs text-[#1b1c1c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#c7f173] file:text-[#324f00] hover:file:bg-[#8fc63d]"
+                  />
+                )}
               </div>
 
               <div className="pt-4 flex justify-end gap-2">
@@ -501,6 +532,19 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
             </form>
           </div>
         </div>
+      )}
+      {/* Cropper Modal */}
+      {rawImageToCrop && (
+        <ImageCropperModal
+          isOpen={true}
+          imageSrc={rawImageToCrop}
+          onClose={() => setRawImageToCrop(null)}
+          onCropComplete={(blob) => {
+            setNewPetPhoto(blob);
+            setPhotoPreview(URL.createObjectURL(blob));
+            setRawImageToCrop(null);
+          }}
+        />
       )}
     </div>
   );
