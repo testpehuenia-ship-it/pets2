@@ -17,13 +17,13 @@ export const FirstAidView: React.FC<FirstAidViewProps> = ({ onOpenEmergency, onG
   const [error, setError] = useState('');
 
   const SPECIES_OPTIONS = [
-    { id: 'todos', label: 'Todas', icon: 'apps' },
-    { id: 'perro', label: 'Perro', icon: 'pets' },
-    { id: 'gato', label: 'Gato', icon: 'cruelty_free' },
-    { id: 'caballo', label: 'Caballo', icon: 'agriculture' },
-    { id: 'ovino_bovino', label: 'Ovino/Bovino', icon: 'grass' },
-    { id: 'aves', label: 'Aves', icon: 'flutter_dash' },
-    { id: 'otros', label: 'Otros', icon: 'category' }
+    { id: 'todos', label: 'Todas', icon: '🐾' },
+    { id: 'perro', label: 'Perro', icon: '🐶' },
+    { id: 'gato', label: 'Gato', icon: '🐱' },
+    { id: 'caballo', label: 'Caballo', icon: '🐴' },
+    { id: 'ovino_bovino', label: 'Ovino/Bovino', icon: '🐮' },
+    { id: 'aves', label: 'Aves', icon: '🐔' },
+    { id: 'otros', label: 'Otros', icon: '🐢' }
   ];
 
   const handleSearch = async () => {
@@ -95,7 +95,7 @@ export const FirstAidView: React.FC<FirstAidViewProps> = ({ onOpenEmergency, onG
                   : 'bg-[#f6f3f2] border-transparent text-[#434938] hover:border-[#c3c9b3]'
               }`}
             >
-              <span className={`material-symbols-outlined text-3xl mb-1 ${selectedSpecies === species.id ? 'filled text-[#436900]' : 'text-[#737a66]'}`}>
+              <span className={`text-3xl mb-1 ${selectedSpecies === species.id ? 'opacity-100' : 'opacity-60 grayscale'}`}>
                 {species.icon}
               </span>
               <span className="text-xs font-semibold">{species.label}</span>
