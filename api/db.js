@@ -30,8 +30,28 @@ export async function initDb() {
       date TEXT,
       time TEXT,
       status TEXT,
+      confirmed_attendance BOOLEAN DEFAULT 0,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
+
+  // Attempt to add column if it doesn't exist (SQLite ALTER TABLE limitation workaround)
+  try {
+    await db.execute("ALTER TABLE appointments ADD COLUMN confirmed_attendance BOOLEAN DEFAULT 0");
+  } catch (e) {
+    // Column likely already exists, ignore error
+  }
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      endpoint TEXT NOT NULL,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+
   console.log('Database tables initialized');
 }

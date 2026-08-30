@@ -290,6 +290,45 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </button>
             </div>
           </section>
+
+          {/* Notificaciones Masivas */}
+          <section className="bg-white rounded-2xl p-5 md:p-6 border border-[#c3c9b3]/40 shadow-xs">
+            <h2 className="font-headline text-lg font-bold text-[#1b1c1c] mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#436900] filled">
+                campaign
+              </span>
+              Aviso General (Push)
+            </h2>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const title = (form.elements.namedItem('title') as HTMLInputElement).value;
+              const body = (form.elements.namedItem('body') as HTMLTextAreaElement).value;
+              
+              const token = localStorage.getItem('pets_token');
+              if (token) {
+                try {
+                  const res = await fetch('/api/push/admin-broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ title, body })
+                  });
+                  if (res.ok) {
+                    alert('Notificación enviada a todos los usuarios registrados.');
+                    form.reset();
+                  }
+                } catch(e) {
+                  alert('Error al enviar notificación.');
+                }
+              }
+            }} className="space-y-3">
+              <input type="text" name="title" required placeholder="Ej: Clínica cerrada el 20/05" className="w-full text-xs p-3 rounded-xl border border-[#c3c9b3]/50 focus:border-[#436900] focus:ring-1 focus:ring-[#436900] outline-none" />
+              <textarea name="body" required rows={2} placeholder="Mensaje para todos los clientes..." className="w-full text-xs p-3 rounded-xl border border-[#c3c9b3]/50 focus:border-[#436900] focus:ring-1 focus:ring-[#436900] outline-none"></textarea>
+              <button type="submit" className="w-full bg-[#1b1c1c] hover:bg-[#343534] text-white font-bold text-xs px-4 py-3 rounded-xl transition-all">
+                Enviar Notificación Push
+              </button>
+            </form>
+          </section>
         </div>
       </div>
 

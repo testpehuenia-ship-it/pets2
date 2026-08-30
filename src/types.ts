@@ -39,6 +39,7 @@ export interface Appointment {
   timeBadge?: string;
   status: 'confirmado' | 'en_espera' | 'en_atencion' | 'emergencia' | 'completado' | 'cancelado';
   emergency?: boolean;
+  confirmed_attendance?: boolean;
   notes?: string;
   ownerName: string;
   ownerPhone: string;

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { subscribeToPushNotifications } from './utils/push';
 import { TabType, Pet, Appointment, VaccineRecord } from './types';
 import { INITIAL_PETS, INITIAL_APPOINTMENTS, INITIAL_FIELD_ALERTS } from './data/initialData';
 import { TopAppBar } from './components/TopAppBar';
@@ -50,12 +51,20 @@ export default function App() {
 
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
+    // Intentar suscribirse a notificaciones al iniciar sesión exitosamente
+    subscribeToPushNotifications();
     if (pendingTab) {
       setCurrentTab(pendingTab);
       setPendingTab(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  useEffect(() => {
+    if (currentUser) {
+      subscribeToPushNotifications();
+    }
+  }, [currentUser]);
 
   const handleSelectDoctorForBooking = (doctorId: string) => {
     setPreselectedDoctorId(doctorId);

@@ -8,6 +8,7 @@ import { db, initDb } from './db.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import webpush from 'web-push';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,13 @@ app.use(cors());
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_pets_key';
+
+// Configurar Web Push
+webpush.setVapidDetails(
+  process.env.VAPID_SUBJECT || 'mailto:admin@pets.com',
+  process.env.VAPID_PUBLIC_KEY || '',
+  process.env.VAPID_PRIVATE_KEY || ''
+);
 
 // Initialize DB
 initDb().catch(console.error);
@@ -164,6 +172,118 @@ REGLAS ESTRICTAS:
   } catch (error) {
     console.error('Error con Gemini AI:', error);
     res.status(500).json({ error: 'Hubo un error al procesar tu consulta con la IA.' });
+  }
+});
+
+// --- PUSH NOTIFICATIONS ---
+
+// 1. Guardar suscripción
+app.post('/api/push/subscribe', authenticateToken, async (req, res) => {
+  try {
+    const subscription = req.body;
+    const subId = 'sub_' + Date.now();
+    await db.execute({
+      sql: 'INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?, ?)',
+      args: [subId, req.user.id, subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth]
+    });
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al guardar suscripción' });
+  }
+});
+
+// 2. Enviar a todos (Admin Broadcast)
+app.post('/api/push/admin-broadcast', authenticateToken, async (req, res) => {
+  try {
+    const { title, body } = req.body;
+    const result = await db.execute('SELECT * FROM push_subscriptions');
+    
+    const payload = JSON.stringify({ title, body, url: '/' });
+    
+    for (const sub of result.rows) {
+      const pushSub = {
+        endpoint: sub.endpoint,
+        keys: { p256dh: sub.p256dh, auth: sub.auth }
+      };
+      webpush.sendNotification(pushSub, payload).catch(console.error);
+    }
+    res.json({ success: true, sentCount: result.rows.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al enviar notificaciones' });
+  }
+});
+
+// 3. Confirmar asistencia
+app.post('/api/appointments/:id/confirm', authenticateToken, async (req, res) => {
+  try {
+    const aptId = req.params.id;
+    await db.execute({
+      sql: 'UPDATE appointments SET confirmed_attendance = 1 WHERE id = ? AND user_id = ?',
+      args: [aptId, req.user.id]
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al confirmar turno' });
+  }
+});
+
+// 4. Cron Job (Chequeo de turnos para Push)
+app.get('/api/cron/check-appointments', async (req, res) => {
+  try {
+    const result = await db.execute('SELECT a.*, u.name as user_name FROM appointments a JOIN users u ON a.user_id = u.id WHERE a.status = "confirmado" AND a.confirmed_attendance = 0');
+    
+    // Obtener todas las suscripciones
+    const subsResult = await db.execute('SELECT * FROM push_subscriptions');
+    const allSubs = subsResult.rows;
+
+    let sent = 0;
+    let cancelled = 0;
+    
+    for (const apt of result.rows) {
+      // Simplificado: asumimos que el cron corre seguido y comparamos las horas (en un sistema real se usa Date estricto)
+      // Como esto es un mockup, asumiremos que se envía siempre para probar si pasamos un query string ?simulate=2h o ?simulate=1h
+      
+      const simulate = req.query.simulate; // '2h' o '1h'
+      
+      const userSubs = allSubs.filter(s => s.user_id === apt.user_id);
+      
+      if (simulate === '2h') {
+        const payload = JSON.stringify({
+          title: '¿Asistirás a tu turno?',
+          body: `Hola ${apt.user_name}, tu turno para ${apt.patientName} es en 2 horas. Por favor confirma tu asistencia.`,
+          url: '/?tab=cuenta'
+        });
+        userSubs.forEach(sub => {
+          webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload).catch(console.error);
+        });
+        sent += userSubs.length;
+      } else if (simulate === '1h') {
+        // Cancelar turno
+        await db.execute({
+          sql: 'UPDATE appointments SET status = "cancelado" WHERE id = ?',
+          args: [apt.id]
+        });
+        cancelled++;
+        
+        const payload = JSON.stringify({
+          title: 'Turno Liberado',
+          body: `Hola ${apt.user_name}, al no confirmar asistencia, tu turno para ${apt.patientName} ha sido liberado.`,
+          url: '/?tab=cuenta'
+        });
+        userSubs.forEach(sub => {
+          webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload).catch(console.error);
+        });
+        sent += userSubs.length;
+      }
+    }
+    
+    res.json({ success: true, sent, cancelled });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en cron' });
   }
 });
 

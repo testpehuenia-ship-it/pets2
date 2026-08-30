@@ -174,11 +174,10 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
           appointments.slice(0, 2).map((apt) => (
             <div
               key={apt.id}
-              className="bg-[#f6f3f2] rounded-2xl p-4 border border-[#c3c9b3]/35 flex items-center gap-4 shadow-xs"
+              className="bg-[#f6f3f2] rounded-2xl p-4 border border-[#c3c9b3]/35 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xs"
             >
               <div className="bg-[#8fc63d] text-[#111f00] rounded-xl p-2.5 flex flex-col items-center justify-center min-w-[58px] shadow-xs">
-                <span className="text-sm font-bold leading-tight">12</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">OCT</span>
+                <span className="text-sm font-bold leading-tight">Hoy</span>
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-headline font-bold text-sm text-[#1b1c1c] truncate">
@@ -193,8 +192,35 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                   <span>{apt.time} - {apt.doctorName}</span>
                 </p>
               </div>
-              <div className="text-[11px] font-bold text-[#436900] bg-[#c7f173] px-2.5 py-1 rounded-full border border-[#8fc63d]/40">
-                Confirmado
+              <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
+                {apt.confirmed_attendance ? (
+                  <div className="text-[11px] font-bold text-[#436900] bg-[#c7f173] px-2.5 py-1 rounded-full border border-[#8fc63d]/40">
+                    Asistencia Confirmada
+                  </div>
+                ) : (
+                  <button 
+                    onClick={async () => {
+                      const token = localStorage.getItem('pets_token');
+                      if (token) {
+                        try {
+                          const res = await fetch(`/api/appointments/${apt.id}/confirm`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                          });
+                          if (res.ok) {
+                            alert('¡Asistencia confirmada exitosamente!');
+                            window.location.reload(); // Simplificación para demo
+                          }
+                        } catch (e) {
+                          alert('Error al confirmar asistencia');
+                        }
+                      }
+                    }}
+                    className="w-full sm:w-auto text-[11px] font-bold text-white bg-[#ba1a1a] px-3 py-1.5 rounded-lg hover:bg-[#93000a] transition-colors"
+                  >
+                    Confirmar Asistencia
+                  </button>
+                )}
               </div>
             </div>
           ))
