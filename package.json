@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite --port=3000 --host=0.0.0.0\" \"node --env-file=.env server/index.js\"",
+    "dev": "concurrently \"vite --port=3000 --host=0.0.0.0\" \"node --env-file=.env api/index.js\"",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist api.js",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
