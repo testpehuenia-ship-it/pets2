@@ -162,7 +162,10 @@ export default function App() {
         )}
 
         {currentTab === 'auxilios' && (
-          <FirstAidView onOpenEmergency={() => setIsEmergencyOpen(true)} />
+          <FirstAidView 
+            onOpenEmergency={() => setIsEmergencyOpen(true)} 
+            onGoToBooking={() => handleSelectTab('reservas')}
+          />
         )}
 
         {currentTab === 'cuenta' && (

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { GoogleGenAI } from '@google/genai';
 import { db, initDb } from './db.js';
 
 const app = express();
@@ -104,6 +105,41 @@ app.get('/api/appointments', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener reservas' });
+  }
+});
+
+// AI First Aid Assistant
+app.post('/api/first-aid', async (req, res) => {
+  try {
+    const { query, species } = req.body;
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY no está configurada en el servidor.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    const prompt = `Eres un asistente veterinario experto en primeros auxilios. 
+Un usuario consulta sobre una emergencia o síntoma de su animal (Especie: ${species}). 
+Consulta: "${query}"
+
+Brinda una guía estructurada, rápida, concisa y profesional. 
+Usa formato Markdown. 
+Tu respuesta DEBE incluir:
+1) Breve evaluación rápida del riesgo.
+2) Qué HACER (pasos claros y seguros).
+3) Qué NO HACER (errores comunes que empeoran la situación).
+4) Termina con una advertencia en negrita recordando que esto no reemplaza la atención veterinaria profesional y que si es urgente, acudan a una clínica de inmediato.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+
+    res.json({ result: response.text });
+  } catch (error) {
+    console.error('Error con Gemini AI:', error);
+    res.status(500).json({ error: 'Hubo un error al procesar tu consulta con la IA.' });
   }
 });
 
