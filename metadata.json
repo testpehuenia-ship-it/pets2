@@ -1,0 +1,6 @@
+{
+  "name": "PETS - Veterinaria Integral",
+  "description": "Aplicación integral de gestión veterinaria, turnos online, primeros auxilios para animales y panel clínico.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,200 @@
+import React, { useState } from 'react';
+import { TabType, Pet, Appointment, VaccineRecord } from './types';
+import { INITIAL_PETS, INITIAL_APPOINTMENTS, INITIAL_FIELD_ALERTS } from './data/initialData';
+import { TopAppBar } from './components/TopAppBar';
+import { BottomNavBar } from './components/BottomNavBar';
+import { NavigationDrawer } from './components/NavigationDrawer';
+import { EmergencyModal } from './components/EmergencyModal';
+import { HomeView } from './components/views/HomeView';
+import { BookingView } from './components/views/BookingView';
+import { FirstAidView } from './components/views/FirstAidView';
+import { ClientAccountView } from './components/views/ClientAccountView';
+import { AdminDashboardView } from './components/views/AdminDashboardView';
+import { TeamView } from './components/views/TeamView';
+import { AuthModal } from './components/AuthModal';
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    const saved = localStorage.getItem('pets_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingTab, setPendingTab] = useState<TabType | null>(null);
+  const [currentTab, setCurrentTab] = useState<TabType>('inicio');
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isEmergencyOpen, setIsEmergencyOpen] = useState<boolean>(false);
+  const [preselectedDoctorId, setPreselectedDoctorId] = useState<string | null>(null);
+
+  // Core App State
+  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
+  const [fieldAlerts, setFieldAlerts] = useState(INITIAL_FIELD_ALERTS);
+
+  // Notification badge counter for active appointments
+  const notificationCount = appointments.filter(
+    (a) => a.status === 'en_espera' || a.status === 'emergencia'
+  ).length;
+
+  const handleSelectTab = (tab: TabType) => {
+    const protectedTabs: TabType[] = ['reservas', 'cuenta', 'admin'];
+    
+    if (protectedTabs.includes(tab) && !currentUser) {
+      setPendingTab(tab);
+      setIsAuthModalOpen(true);
+      return;
+    }
+    
+    setCurrentTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAuthSuccess = (user: any) => {
+    setCurrentUser(user);
+    if (pendingTab) {
+      setCurrentTab(pendingTab);
+      setPendingTab(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSelectDoctorForBooking = (doctorId: string) => {
+    setPreselectedDoctorId(doctorId);
+    setCurrentTab('reservas');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBookVaccine = () => {
+    setCurrentTab('reservas');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBookingConfirmed = (newApt: Appointment) => {
+    setAppointments((prev) => [newApt, ...prev]);
+  };
+
+  const handleQuickEmergencyBooking = (aptPartial: Partial<Appointment>) => {
+    const emergencyApt: Appointment = {
+      id: `apt-emerg-${Date.now()}`,
+      ticketNumber: `#EM-${Math.floor(1000 + Math.random() * 9000)}`,
+      patientName: aptPartial.patientName || 'Paciente Urgente',
+      species: aptPartial.species || 'General',
+      serviceType: aptPartial.serviceType || 'Atención Urgente 24hs',
+      doctorName: 'Guardia Médica 24hs',
+      date: 'Hoy (Inmediato)',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timeBadge: 'URG',
+      status: 'emergencia',
+      emergency: true,
+      ownerName: aptPartial.ownerName || 'Ingreso Urgente',
+      ownerPhone: aptPartial.ownerPhone || '+54 11 1234-5678',
+      notes: aptPartial.notes || 'Ingreso por guardia de urgencia',
+    };
+    setAppointments((prev) => [emergencyApt, ...prev]);
+  };
+
+  const handleAddPet = (newPet: Pet) => {
+    setPets((prev) => [...prev, newPet]);
+  };
+
+  const handleUpdatePetVaccines = (petId: string, vaccines: VaccineRecord[]) => {
+    setPets((prev) =>
+      prev.map((pet) => (pet.id === petId ? { ...pet, vaccines } : pet))
+    );
+  };
+
+  const handleUpdateAppointmentStatus = (
+    id: string,
+    status: Appointment['status']
+  ) => {
+    setAppointments((prev) =>
+      prev.map((apt) => (apt.id === id ? { ...apt, status } : apt))
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-[#fbf9f8] text-[#1b1c1c] font-body flex flex-col antialiased selection:bg-[#c7f173] selection:text-[#141f00]">
+      {/* Top App Bar Header */}
+      <TopAppBar
+        currentTab={currentTab}
+        onSelectTab={handleSelectTab}
+        onOpenDrawer={() => setIsDrawerOpen(true)}
+        onOpenEmergency={() => setIsEmergencyOpen(true)}
+        notificationCount={notificationCount}
+      />
+
+      {/* Side Navigation Drawer (Mobile) */}
+      <NavigationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        currentTab={currentTab}
+        onSelectTab={handleSelectTab}
+        onOpenEmergency={() => setIsEmergencyOpen(true)}
+      />
+
+      {/* Emergency 24hs Rapid Modal */}
+      <EmergencyModal
+        isOpen={isEmergencyOpen}
+        onClose={() => setIsEmergencyOpen(false)}
+        onQuickBookEmergency={handleQuickEmergencyBooking}
+      />
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        onSuccess={handleAuthSuccess} 
+      />
+
+      {/* Main View Container */}
+      <main className="flex-1 pb-20 md:pb-12">
+        {currentTab === 'inicio' && (
+          <HomeView
+            onSelectTab={handleSelectTab}
+            onOpenEmergency={() => setIsEmergencyOpen(true)}
+          />
+        )}
+
+        {currentTab === 'reservas' && (
+          <BookingView
+            initialDoctorId={preselectedDoctorId}
+            onBookingConfirmed={handleBookingConfirmed}
+            onGoToAccount={() => handleSelectTab('cuenta')}
+          />
+        )}
+
+        {currentTab === 'auxilios' && (
+          <FirstAidView onOpenEmergency={() => setIsEmergencyOpen(true)} />
+        )}
+
+        {currentTab === 'cuenta' && (
+          <ClientAccountView
+            pets={pets}
+            appointments={appointments}
+            onBookVaccine={handleBookVaccine}
+            onAddPet={handleAddPet}
+            onUpdatePetVaccines={handleUpdatePetVaccines}
+          />
+        )}
+
+        {currentTab === 'equipo' && (
+          <TeamView
+            onSelectDoctorForBooking={handleSelectDoctorForBooking}
+            onSelectTab={handleSelectTab}
+          />
+        )}
+
+        {currentTab === 'admin' && (
+          <AdminDashboardView
+            appointments={appointments}
+            fieldAlerts={fieldAlerts}
+            onOpenBooking={() => handleSelectTab('reservas')}
+            onOpenEmergency={() => setIsEmergencyOpen(true)}
+            onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
+          />
+        )}
+      </main>
+
+      {/* Bottom Navigation Bar (Mobile) */}
+      <BottomNavBar currentTab={currentTab} onSelectTab={handleSelectTab} />
+    </div>
+  );
+}
