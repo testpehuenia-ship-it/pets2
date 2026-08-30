@@ -156,9 +156,10 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                   }`}
                 >
                   <img
-                    src={pet.photo}
+                    src={pet.photo || CLINIC_IMAGES.petMaxPark}
                     alt={pet.name}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover bg-gray-100"
+                    onError={(e) => { e.currentTarget.src = CLINIC_IMAGES.petMaxPark; }}
                   />
                 </div>
                 <span
@@ -188,6 +189,115 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
           </button>
         </div>
       </section>
+
+      {/* Active Pet Profile Card */}
+      {activePet && (
+        <section className="bg-white rounded-2xl shadow-ambient border border-[#c3c9b3]/30 overflow-hidden relative">
+          <div className="absolute top-3 right-4 flex gap-2 z-10">
+            <button
+              onClick={() => openEditPetModal(activePet)}
+              className="w-8 h-8 rounded-full bg-black/40 text-white backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+              title="Editar Mascota"
+            >
+              <span className="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm(`¿Estás seguro de que quieres ocultar a ${activePet.name}? (Se mantendrá el historial médico)`)) {
+                  onDeletePet(activePet.id);
+                  const remaining = pets.filter(p => p.id !== activePet.id);
+                  if (remaining.length > 0) {
+                    setSelectedPetId(remaining[0].id);
+                  }
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-[#ba1a1a]/80 text-white backdrop-blur-sm flex items-center justify-center hover:bg-[#ba1a1a] transition-colors"
+              title="Eliminar Mascota"
+            >
+              <span className="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+          
+          <div className="h-44 sm:h-52 w-full relative">
+            <img
+              src={activePet.coverPhoto || activePet.photo || CLINIC_IMAGES.petMaxPark}
+              alt={activePet.name}
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.src = CLINIC_IMAGES.petMaxPark; }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute bottom-3.5 left-4 text-white">
+              <h2 className="font-headline text-2xl font-bold leading-tight">
+                {activePet.name}
+              </h2>
+              <p className="text-xs text-white/90 font-medium">
+                {activePet.breed} • Microchip: {activePet.microchip || 'No Registrado'}
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 md:p-6 space-y-5">
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="bg-[#f6f3f2] p-3 rounded-xl text-center border border-[#c3c9b3]/20">
+                <span className="block text-[10px] text-[#737a66] font-bold uppercase tracking-wider mb-0.5">Especie</span>
+                <span className="font-headline font-bold text-sm text-[#1b1c1c]">{activePet.species}</span>
+              </div>
+              <div className="bg-[#f6f3f2] p-3 rounded-xl text-center border border-[#c3c9b3]/20">
+                <span className="block text-[10px] text-[#737a66] font-bold uppercase tracking-wider mb-0.5">Edad</span>
+                <span className="font-headline font-bold text-sm text-[#1b1c1c]">{activePet.age}</span>
+              </div>
+              <div className="bg-[#f6f3f2] p-3 rounded-xl text-center border border-[#c3c9b3]/20">
+                <span className="block text-[10px] text-[#737a66] font-bold uppercase tracking-wider mb-0.5">Peso</span>
+                <span className="font-headline font-bold text-sm text-[#1b1c1c]">{activePet.weight || 'N/A'}</span>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-headline font-bold text-sm text-[#1b1c1c] flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#436900] text-lg filled">vaccines</span>
+                  Historial de Vacunas
+                </h4>
+              </div>
+
+              <ul className="space-y-2">
+                {(activePet.vaccines || []).length === 0 ? (
+                  <li className="text-xs text-gray-500 italic p-2 text-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    No hay vacunas registradas
+                  </li>
+                ) : (
+                  (activePet.vaccines || []).map((vac) => {
+                    const isCompleted = vac.status === 'completa';
+                    return (
+                    <li
+                      key={vac.id}
+                      onClick={() => handleToggleVaccine(vac.id)}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${
+                        isCompleted
+                          ? 'bg-[#ffffff] border-[#c3c9b3]/30 hover:border-[#8fc63d]'
+                          : 'bg-[#ffdad6]/25 border-[#ba1a1a]/30'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-xl ${isCompleted ? 'text-[#436900] filled' : 'text-[#ba1a1a]'}`}>
+                        {isCompleted ? 'check_circle' : 'radio_button_unchecked'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={`block text-xs font-bold leading-tight ${isCompleted ? 'text-[#1b1c1c]' : 'text-[#93000a]'}`}>
+                          {vac.name}
+                        </span>
+                        <span className={`block text-[11px] ${isCompleted ? 'text-[#737a66]' : 'text-[#ba1a1a]/80 font-medium'}`}>
+                          {vac.date}
+                        </span>
+                      </div>
+                    </li>
+                    );
+                  })
+                )}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Próximos Turnos */}
       <section className="space-y-3">
