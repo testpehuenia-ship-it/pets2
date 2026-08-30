@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Appointment, StaffMember, Pet } from '../../types';
-import { INITIAL_STAFF } from '../../data/initialData';
+import { INITIAL_STAFF, CLINIC_IMAGES } from '../../data/initialData';
 
 interface BookingViewProps {
   pets?: Pet[];
@@ -175,12 +175,16 @@ END:VCALENDAR`;
                       type="button"
                       onClick={() => {
                         setSelectedAnimal(pet.name);
-                        setCurrentStep(2); // Auto advance
                       }}
                       className="flex flex-col items-center justify-center p-3 rounded-xl border border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900] transition-all group"
                     >
                       <div className="w-14 h-14 rounded-full overflow-hidden mb-2 border-2 border-transparent group-hover:border-[#8fc63d]">
-                        <img src={pet.photo || pet.coverPhoto || '/vite.svg'} alt={pet.name} className="w-full h-full object-cover" />
+                        <img 
+                          src={pet.photo || CLINIC_IMAGES.petMaxPark} 
+                          alt={pet.name} 
+                          className="w-full h-full object-cover bg-gray-100" 
+                          onError={(e) => { e.currentTarget.src = CLINIC_IMAGES.petMaxPark; }}
+                        />
                       </div>
                       <span className="font-bold text-sm text-[#1b1c1c] group-hover:text-[#436900] truncate w-full px-1">{pet.name}</span>
                     </button>
@@ -298,7 +302,10 @@ END:VCALENDAR`;
                   return (
                     <div
                       key={doc.id}
-                      onClick={() => setSelectedDoctor(doc)}
+                      onClick={() => {
+                        setSelectedDoctor(doc);
+                        setCurrentStep(3);
+                      }}
                       className={`border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-3.5 ${
                         isSelected
                           ? 'border-[#436900] bg-[#c7f173]/20 ring-2 ring-[#8fc63d]/30 shadow-xs'
@@ -425,7 +432,10 @@ END:VCALENDAR`;
                     <button
                       key={slot}
                       type="button"
-                      onClick={() => setSelectedTime(slot)}
+                      onClick={() => {
+                        setSelectedTime(slot);
+                        setCurrentStep(4);
+                      }}
                       className={`py-2.5 px-3 rounded-lg text-xs font-bold border transition-all ${
                         isSelected
                           ? 'border-[#436900] bg-[#8fc63d] text-[#111f00] shadow-xs'
