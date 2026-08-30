@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const SLIDER_IMAGES = [
-  "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=1920&h=1080", // Dog & Farm feel
-  "https://images.unsplash.com/photo-1629898235213-90bd6d2c4b57?auto=format&fit=crop&q=80&w=1920&h=1080", // Horse/Farm
-  "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&q=80&w=1920&h=1080"  // Horse
+  "/perrogato.webp", 
+  "/perroconejo.webp", 
+  "/vacas.webp" 
 ];
 
 export const HeroSlider: React.FC = () => {

@@ -147,7 +147,7 @@ Consulta del usuario: "${query}"
 
 REGLAS ESTRICTAS:
 1. BASA tu respuesta EXCLUSIVAMENTE en la información proporcionada en el "Manual Pet Emergencia". No inventes tratamientos ni recomiendes medicamentos humanos que no estén avalados en el manual.
-2. Si el síntoma o emergencia consultada NO se menciona en el manual, debes indicar claramente: "Lamentablemente, este caso específico no está cubierto en mi manual de primeros auxilios. Debes acudir a una clínica veterinaria de inmediato."
+2. Si el síntoma o emergencia consultada NO se menciona en el manual, NO digas que no está en tu manual. Simplemente omite ese comentario, sugiere acudir a una clínica veterinaria de inmediato y provee consejos generales de urgencia basados en los síntomas más cercanos del manual.
 3. Brinda una guía estructurada, rápida y concisa en formato Markdown.
 4. Tu respuesta DEBE incluir:
    - Breve evaluación rápida del riesgo (basado en el manual).
@@ -156,7 +156,7 @@ REGLAS ESTRICTAS:
 5. Termina SIEMPRE con una advertencia en negrita recordando que esto no reemplaza la atención veterinaria profesional y que si es urgente, acudan a una clínica.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       contents: prompt,
     });
 

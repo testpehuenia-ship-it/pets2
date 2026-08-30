@@ -2,7 +2,6 @@ import React from 'react';
 import { TabType } from '../../types';
 import { CLINIC_IMAGES } from '../../data/initialData';
 import { HeroSlider } from '../HeroSlider';
-import { CLINIC_IMAGES } from '../../data/initialData';
 
 interface HomeViewProps {
   onSelectTab: (tab: TabType) => void;
@@ -36,6 +35,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
+              <button
+                onClick={() => onSelectTab('cuenta')}
+                className="w-full sm:w-auto bg-white hover:bg-gray-50 text-[#1b1c1c] border border-[#7a5739]/30 font-bold text-sm px-6 py-3.5 rounded-lg shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wide"
+              >
+                <span className="material-symbols-outlined text-xl">person</span>
+                CREAR CUENTA / INICIO
+              </button>
+
               <button
                 onClick={() => onSelectTab('reservas')}
                 className="w-full sm:w-auto bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] font-bold text-sm px-6 py-3.5 rounded-lg shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wide"
