@@ -3,16 +3,20 @@ import { TabType } from '../types';
 import { CLINIC_IMAGES } from '../data/initialData';
 
 interface TopAppBarProps {
+  user?: any;
   currentTab: TabType;
   onSelectTab: (tab: TabType) => void;
   onOpenDrawer: () => void;
   onOpenEmergency: () => void;
+  onLogout?: () => void;
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({
+  user,
   currentTab,
   onSelectTab,
   onOpenDrawer,
+  onLogout,
 }) => {
   return (
     <header className="bg-[#fbf9f8]/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-[#c3c9b3]/20">
@@ -98,29 +102,54 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
           >
             Equipo y Contacto
           </button>
-
-          <button
-            onClick={() => onSelectTab('admin')}
-            className={`font-semibold text-sm transition-all pb-1 flex items-center gap-1.5 ${
-              currentTab === 'admin'
-                ? 'text-[#436900] border-b-2 border-[#436900]'
-                : 'text-[#434938] hover:text-[#436900]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-base">dashboard</span>
-            Panel Admin
-          </button>
         </nav>
 
-        {/* Right CTA Button */}
-        <div className="flex items-center gap-2">
+        {/* Right Side: Admin Link, Action Button & User Profile */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => onSelectTab('admin')}
+            className={`hidden md:flex items-center gap-1.5 font-bold text-xs transition-colors ${
+              currentTab === 'admin'
+                ? 'text-[#436900]'
+                : 'text-[#737a66] hover:text-[#436900]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg">grid_view</span>
+            Panel Admin
+          </button>
+
+          {user && (
+            <div className="hidden md:flex items-center gap-3 border-l border-[#c3c9b3]/30 pl-4 ml-2">
+              <div className="flex flex-col items-end">
+                <span className="text-xs font-bold text-[#1b1c1c]">{user.name}</span>
+                <button
+                  onClick={onLogout}
+                  className="text-[10px] text-[#ba1a1a] font-medium hover:underline flex items-center gap-0.5"
+                >
+                  <span className="material-symbols-outlined text-[12px]">logout</span>
+                  Cerrar sesión
+                </button>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#c7f173] text-[#324f00] flex items-center justify-center font-headline font-bold border border-[#8fc63d]">
+                {user.name?.[0]?.toUpperCase() || 'U'}
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => onSelectTab('reservas')}
-            className="bg-[#8fc63d] text-[#111f00] font-bold text-xs md:text-sm tracking-wide px-4 py-2.5 rounded-lg shadow-sm hover:bg-[#9fd74d] active:scale-95 transition-all flex items-center gap-1.5 uppercase"
+            className="hidden md:flex bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] px-5 py-2.5 rounded-xl font-bold text-xs items-center gap-2 transition-all shadow-sm active:scale-95"
           >
-            <span className="material-symbols-outlined text-lg">calendar_month</span>
-            <span className="hidden sm:inline">RESERVAR TURNO</span>
-            <span className="sm:hidden">TURNO</span>
+            <span className="material-symbols-outlined text-base">calendar_month</span>
+            RESERVAR TURNO
+          </button>
+          
+          {/* Mobile Only Action */}
+          <button
+            onClick={() => onSelectTab('reservas')}
+            className="md:hidden bg-[#8fc63d] text-[#111f00] p-2 rounded-lg shadow-sm"
+          >
+             <span className="material-symbols-outlined text-lg">calendar_month</span>
           </button>
         </div>
       </div>

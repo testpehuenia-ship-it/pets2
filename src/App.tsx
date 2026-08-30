@@ -77,6 +77,15 @@ export default function App() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('pets_user');
+    localStorage.removeItem('pets_token');
+    setCurrentUser(null);
+    setPets([]);
+    setCurrentTab('inicio');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     if (currentUser) {
       subscribeToPushNotifications();
@@ -142,11 +151,12 @@ export default function App() {
     <div className="min-h-screen bg-[#fbf9f8] text-[#1b1c1c] font-body flex flex-col antialiased selection:bg-[#c7f173] selection:text-[#141f00]">
       {/* Top App Bar Header */}
       <TopAppBar
+        user={currentUser}
         currentTab={currentTab}
         onSelectTab={handleSelectTab}
         onOpenDrawer={() => setIsDrawerOpen(true)}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
-        notificationCount={notificationCount}
+        onLogout={handleLogout}
       />
 
       {/* Side Navigation Drawer (Mobile) */}
