@@ -4,6 +4,21 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { GoogleGenAI } from '@google/genai';
 import { db, initDb } from './db.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Cargar el libro de emergencias en memoria
+let petEmergenciaBook = '';
+try {
+  petEmergenciaBook = fs.readFileSync(path.join(__dirname, 'data', 'pet_emergencia.md'), 'utf-8');
+  console.log('Libro "Pet Emergencia" cargado correctamente en memoria.');
+} catch (e) {
+  console.warn('No se pudo cargar pet_emergencia.md:', e.message);
+}
 
 const app = express();
 app.use(cors());
@@ -119,17 +134,25 @@ app.post('/api/first-aid', async (req, res) => {
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
-    const prompt = `Eres un asistente veterinario experto en primeros auxilios. 
-Un usuario consulta sobre una emergencia o síntoma de su animal (Especie: ${species}). 
-Consulta: "${query}"
+    const prompt = `Actúa ESTRICTAMENTE como un Veterinario Virtual experto. 
+A continuación te proporciono un manual de emergencias veterinarias llamado "Pet Emergencia":
 
-Brinda una guía estructurada, rápida, concisa y profesional. 
-Usa formato Markdown. 
-Tu respuesta DEBE incluir:
-1) Breve evaluación rápida del riesgo.
-2) Qué HACER (pasos claros y seguros).
-3) Qué NO HACER (errores comunes que empeoran la situación).
-4) Termina con una advertencia en negrita recordando que esto no reemplaza la atención veterinaria profesional y que si es urgente, acudan a una clínica de inmediato.`;
+--- INICIO DEL MANUAL PET EMERGENCIA ---
+${petEmergenciaBook}
+--- FIN DEL MANUAL PET EMERGENCIA ---
+
+Un usuario consulta sobre una emergencia o síntoma de su animal (Especie: ${species}). 
+Consulta del usuario: "${query}"
+
+REGLAS ESTRICTAS:
+1. BASA tu respuesta EXCLUSIVAMENTE en la información proporcionada en el "Manual Pet Emergencia". No inventes tratamientos ni recomiendes medicamentos humanos que no estén avalados en el manual.
+2. Si el síntoma o emergencia consultada NO se menciona en el manual, debes indicar claramente: "Lamentablemente, este caso específico no está cubierto en mi manual de primeros auxilios. Debes acudir a una clínica veterinaria de inmediato."
+3. Brinda una guía estructurada, rápida y concisa en formato Markdown.
+4. Tu respuesta DEBE incluir:
+   - Breve evaluación rápida del riesgo (basado en el manual).
+   - Qué HACER (pasos claros y seguros extraídos del manual).
+   - Qué NO HACER (errores comunes o prohibiciones indicadas en el manual).
+5. Termina SIEMPRE con una advertencia en negrita recordando que esto no reemplaza la atención veterinaria profesional y que si es urgente, acudan a una clínica.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
