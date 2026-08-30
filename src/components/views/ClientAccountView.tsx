@@ -3,27 +3,29 @@ import { Pet, Appointment, VaccineRecord } from '../../types';
 import { CLINIC_IMAGES } from '../../data/initialData';
 
 interface ClientAccountViewProps {
+  user: any;
   pets: Pet[];
   appointments: Appointment[];
   onBookVaccine: () => void;
-  onAddPet: (pet: Pet) => void;
+  onAddPet: (petFormData: FormData) => void;
   onUpdatePetVaccines: (petId: string, vaccines: VaccineRecord[]) => void;
 }
 
 export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
+  user,
   pets,
   appointments,
   onBookVaccine,
   onAddPet,
   onUpdatePetVaccines,
 }) => {
-  const [selectedPetId, setSelectedPetId] = useState<string>(pets[0]?.id || 'pet-1');
-  const [isAddPetModalOpen, setIsAddPetModalOpen] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string>(pets[0]?.id || '');
+  const [isAddPetModalOpen, setIsAddPetModalOpen] = useState(pets.length === 0);
   const [newPetName, setNewPetName] = useState('');
   const [newPetSpecies, setNewPetSpecies] = useState<'Canino' | 'Felino' | 'Equino' | 'Bovino'>('Canino');
   const [newPetBreed, setNewPetBreed] = useState('');
   const [newPetAge, setNewPetAge] = useState('');
-  const [newPetWeight, setNewPetWeight] = useState('');
+  const [newPetPhoto, setNewPetPhoto] = useState<File | null>(null);
 
   const activePet = pets.find((p) => p.id === selectedPetId) || pets[0];
 
@@ -47,51 +49,36 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
     e.preventDefault();
     if (!newPetName.trim()) return;
 
-    const newPet: Pet = {
-      id: `pet-${Date.now()}`,
-      name: newPetName,
-      species: newPetSpecies,
-      speciesKey: newPetSpecies === 'Canino' ? 'perro' : newPetSpecies === 'Felino' ? 'gato' : 'caballo',
-      breed: newPetBreed || 'Mestizo',
-      age: newPetAge || '1 Año',
-      weight: newPetWeight || '10 kg',
-      photo:
-        newPetSpecies === 'Felino'
-          ? CLINIC_IMAGES.petLunaAvatar
-          : newPetSpecies === 'Equino'
-          ? CLINIC_IMAGES.campoHorse
-          : CLINIC_IMAGES.petMaxAvatar,
-      coverPhoto: CLINIC_IMAGES.mascotasCatDog,
-      ownerName: 'Maria González',
-      vaccines: [
-        { id: `v-${Date.now()}-1`, name: 'Plan Sanitario Inicial', date: 'Pendiente', status: 'pendiente' },
-      ],
-    };
+    const formData = new FormData();
+    formData.append('name', newPetName);
+    formData.append('species', newPetSpecies);
+    formData.append('breed', newPetBreed || 'Mestizo');
+    formData.append('age', newPetAge || '1 Año');
+    if (newPetPhoto) {
+      formData.append('photo', newPetPhoto);
+    }
 
-    onAddPet(newPet);
-    setSelectedPetId(newPet.id);
+    onAddPet(formData);
     setIsAddPetModalOpen(false);
     setNewPetName('');
     setNewPetBreed('');
     setNewPetAge('');
-    setNewPetWeight('');
+    setNewPetPhoto(null);
   };
 
   return (
     <div className="py-6 px-4 max-w-md md:max-w-3xl mx-auto animate-in fade-in duration-300 space-y-6">
       {/* User Profile Overview */}
       <section className="flex items-center gap-4 p-4 md:p-6 bg-white rounded-2xl shadow-ambient border border-[#c3c9b3]/30">
-        <img
-          src={CLINIC_IMAGES.ownerMaria}
-          alt="Maria González"
-          className="w-16 h-16 rounded-full object-cover border-2 border-[#8fc63d]"
-        />
+        <div className="w-16 h-16 rounded-full bg-[#c7f173] text-[#324f00] flex items-center justify-center font-headline font-bold text-2xl border-2 border-[#8fc63d]">
+          {user?.name?.[0]?.toUpperCase() || 'U'}
+        </div>
         <div className="flex-1 min-w-0">
           <h2 className="font-headline text-xl md:text-2xl font-bold text-[#1b1c1c]">
-            Hola, Maria
+            Hola, {user?.name || 'Usuario'}
           </h2>
           <p className="text-xs md:text-sm text-[#434938]">
-            Tus mascotas te esperan en su panel de salud.
+            {pets.length === 0 ? 'Agrega tu primera mascota para empezar.' : 'Tus mascotas te esperan en su panel de salud.'}
           </p>
         </div>
       </section>
@@ -228,26 +215,28 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
       </section>
 
       {/* Alerts / Reminders Banner */}
-      <section>
-        <div className="bg-[#ffdad6] text-[#93000a] rounded-2xl p-4 md:p-5 flex items-start gap-3.5 border border-[#ba1a1a]/25 shadow-xs">
-          <span className="material-symbols-outlined text-2xl mt-0.5 text-[#ba1a1a] filled">
-            notification_important
-          </span>
-          <div className="flex-1">
-            <h4 className="font-headline font-bold text-sm">Vacunación Próxima</h4>
-            <p className="text-xs text-[#93000a]/90 mt-1 leading-relaxed">
-              {activePet?.name || 'Tu mascota'} necesita su refuerzo anual de Rabia antes del 20 de Octubre.
-            </p>
-            <button
-              onClick={onBookVaccine}
-              className="mt-3 bg-white text-[#ba1a1a] font-bold text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-[#ffffff]/90 active:scale-95 transition-all inline-flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-sm">calendar_add_on</span>
-              Agendar Ahora
-            </button>
+      {activePet && (
+        <section>
+          <div className="bg-[#ffdad6] text-[#93000a] rounded-2xl p-4 md:p-5 flex items-start gap-3.5 border border-[#ba1a1a]/25 shadow-xs">
+            <span className="material-symbols-outlined text-2xl mt-0.5 text-[#ba1a1a] filled">
+              notification_important
+            </span>
+            <div className="flex-1">
+              <h4 className="font-headline font-bold text-sm">Vacunación Próxima</h4>
+              <p className="text-xs text-[#93000a]/90 mt-1 leading-relaxed">
+                {activePet.name} necesita su refuerzo anual de Rabia antes del 20 de Octubre.
+              </p>
+              <button
+                onClick={onBookVaccine}
+                className="mt-3 bg-white text-[#ba1a1a] font-bold text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-[#ffffff]/90 active:scale-95 transition-all inline-flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-sm">calendar_add_on</span>
+                Agendar Ahora
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Active Pet Profile Card (Max) */}
       {activePet && (
@@ -363,6 +352,41 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                 })}
               </ul>
             </div>
+
+            {/* Acciones Rápidas de la Mascota */}
+            <div className="pt-4 mt-2 border-t border-[#c3c9b3]/30 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  // En un flujo real redirige a la vista de reserva con la mascota seleccionada
+                  alert('Ir a Sacar Turno para ' + activePet.name);
+                }}
+                className="flex items-center justify-center gap-2 bg-[#c7f173] text-[#324f00] p-3 rounded-xl font-bold text-xs hover:bg-[#8fc63d] transition-colors border border-[#8fc63d]"
+              >
+                <span className="material-symbols-outlined text-lg">calendar_add_on</span>
+                Sacar Turno
+              </button>
+              
+              <button
+                onClick={() => {
+                  alert('Ir a Atención de Urgencia 24hs para ' + activePet.name);
+                }}
+                className="flex items-center justify-center gap-2 bg-[#ffdad6] text-[#ba1a1a] p-3 rounded-xl font-bold text-xs hover:bg-[#ffb4ab] transition-colors border border-[#ba1a1a]/30"
+              >
+                <span className="material-symbols-outlined text-lg filled">emergency</span>
+                Urgencia
+              </button>
+              
+              <button
+                onClick={() => {
+                  alert('Ir a Asistente de Primeros Auxilios (IA)');
+                }}
+                className="flex items-center justify-center gap-2 bg-[#eae8e7] text-[#436900] p-3 rounded-xl font-bold text-xs hover:bg-[#e5e1db] transition-colors border border-[#c3c9b3]"
+              >
+                <span className="material-symbols-outlined text-lg">medical_information</span>
+                Primeros Auxilios
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -439,22 +463,21 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                     className="w-full border border-[#c3c9b3] rounded-lg p-2.5 text-xs text-[#1b1c1c] focus:border-[#436900] outline-none"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#434938] mb-1">
-                    Peso
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ej. 14 kg"
-                    value={newPetWeight}
-                    onChange={(e) => setNewPetWeight(e.target.value)}
-                    className="w-full border border-[#c3c9b3] rounded-lg p-2.5 text-xs text-[#1b1c1c] focus:border-[#436900] outline-none"
-                  />
-                </div>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="mt-3">
+                <label className="block text-xs font-bold text-[#434938] mb-1">
+                  Foto de la Mascota
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewPetPhoto(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-[#1b1c1c] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#c7f173] file:text-[#324f00] hover:file:bg-[#8fc63d]"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddPetModalOpen(false)}

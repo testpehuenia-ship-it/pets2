@@ -27,7 +27,7 @@ export default function App() {
   const [preselectedDoctorId, setPreselectedDoctorId] = useState<string | null>(null);
 
   // Core App State
-  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
   const [fieldAlerts, setFieldAlerts] = useState(INITIAL_FIELD_ALERTS);
 
@@ -49,10 +49,27 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const fetchPets = async () => {
+    const token = localStorage.getItem('pets_token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/pets', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPets(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     // Intentar suscribirse a notificaciones al iniciar sesión exitosamente
     subscribeToPushNotifications();
+    fetchPets();
     if (pendingTab) {
       setCurrentTab(pendingTab);
       setPendingTab(null);
@@ -63,6 +80,7 @@ export default function App() {
   useEffect(() => {
     if (currentUser) {
       subscribeToPushNotifications();
+      fetchPets();
     }
   }, [currentUser]);
 
@@ -179,10 +197,26 @@ export default function App() {
 
         {currentTab === 'cuenta' && (
           <ClientAccountView
+            user={currentUser}
             pets={pets}
             appointments={appointments}
             onBookVaccine={handleBookVaccine}
-            onAddPet={handleAddPet}
+            onAddPet={async (petFormData: FormData) => {
+              const token = localStorage.getItem('pets_token');
+              if (!token) return;
+              try {
+                const res = await fetch('/api/pets', {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${token}` },
+                  body: petFormData
+                });
+                if (res.ok) {
+                  fetchPets(); // Refresh pets after adding
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }}
             onUpdatePetVaccines={handleUpdatePetVaccines}
           />
         )}

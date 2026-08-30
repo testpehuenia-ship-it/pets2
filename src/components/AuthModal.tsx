@@ -15,7 +15,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    address: '',
+    phone: ''
   });
 
   if (!isOpen) return null;
@@ -94,6 +96,44 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   />
                 </div>
               </div>
+            )}
+
+            {!isLogin && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-[#1b1c1c] mb-1">Domicilio</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-[#a4a9a0] text-xl">home</span>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      className="block w-full pl-10 pr-3 py-3 border border-[#e5e1db] rounded-2xl bg-[#fbf9f8] focus:ring-2 focus:ring-[#c7f173] focus:border-[#c7f173] outline-none transition-all"
+                      placeholder="Av. Principal 123"
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#1b1c1c] mb-1">Teléfono</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-[#a4a9a0] text-xl">phone</span>
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      className="block w-full pl-10 pr-3 py-3 border border-[#e5e1db] rounded-2xl bg-[#fbf9f8] focus:ring-2 focus:ring-[#c7f173] focus:border-[#c7f173] outline-none transition-all"
+                      placeholder="+54 11 1234-5678"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div>

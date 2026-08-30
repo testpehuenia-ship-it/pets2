@@ -14,7 +14,27 @@ export async function initDb() {
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
+      address TEXT,
+      phone TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  try {
+    await db.execute("ALTER TABLE users ADD COLUMN address TEXT");
+    await db.execute("ALTER TABLE users ADD COLUMN phone TEXT");
+  } catch(e) {}
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS pets (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      name TEXT NOT NULL,
+      species TEXT NOT NULL,
+      breed TEXT,
+      age TEXT,
+      photo TEXT,
+      FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
 

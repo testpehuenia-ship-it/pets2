@@ -9,6 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import webpush from 'web-push';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +37,16 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY || ''
 );
 
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configurar Multer para memoria (subida a Cloudinary)
+const upload = multer({ storage: multer.memoryStorage() });
+
 // Initialize DB
 initDb().catch(console.error);
 
@@ -55,17 +67,17 @@ const authenticateToken = (req, res, next) => {
 // Register
 app.post('/api/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, address, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = 'usr_' + Date.now();
     
     await db.execute({
-      sql: 'INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)',
-      args: [userId, name, email, hashedPassword]
+      sql: 'INSERT INTO users (id, name, email, password, address, phone) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [userId, name, email, hashedPassword, address || '', phone || '']
     });
     
     const token = jwt.sign({ id: userId, email, name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: userId, name, email } });
+    res.json({ token, user: { id: userId, name, email, address, phone } });
   } catch (error) {
     console.error(error);
     res.status(400).json({ error: 'El email ya está registrado o hubo un error.' });
@@ -92,10 +104,52 @@ app.post('/api/login', async (req, res) => {
     }
     
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, address: user.address, phone: user.phone } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Pets - Get User Pets
+app.get('/api/pets', authenticateToken, async (req, res) => {
+  try {
+    const result = await db.execute({
+      sql: 'SELECT * FROM pets WHERE user_id = ?',
+      args: [req.user.id]
+    });
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener mascotas' });
+  }
+});
+
+// Pets - Create Pet with Photo
+app.post('/api/pets', authenticateToken, upload.single('photo'), async (req, res) => {
+  try {
+    const { name, species, breed, age } = req.body;
+    let photoUrl = '';
+
+    if (req.file) {
+      // Subir buffer a Cloudinary
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+      const result = await cloudinary.uploader.upload(dataURI, { folder: 'pets2' });
+      photoUrl = result.secure_url;
+    }
+
+    const petId = 'pet_' + Date.now();
+    
+    await db.execute({
+      sql: 'INSERT INTO pets (id, user_id, name, species, breed, age, photo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      args: [petId, req.user.id, name, species, breed, age, photoUrl]
+    });
+    
+    res.json({ success: true, pet: { id: petId, name, species, breed, age, photo: photoUrl } });
+  } catch (error) {
+    console.error('Error uploading pet:', error);
+    res.status(500).json({ error: 'Error al dar de alta la mascota' });
   }
 });
 
