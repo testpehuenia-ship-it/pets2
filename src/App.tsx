@@ -251,6 +251,37 @@ export default function App() {
                 console.error(e);
               }
             }}
+            onEditPet={async (petId: string, petFormData: FormData) => {
+              const token = localStorage.getItem('pets_token');
+              if (!token) return;
+              try {
+                const res = await fetch(`/api/pets/${petId}`, {
+                  method: 'PUT',
+                  headers: { 'Authorization': `Bearer ${token}` },
+                  body: petFormData
+                });
+                if (res.ok) {
+                  fetchPets(); // Refresh pets after updating
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            onDeletePet={async (petId: string) => {
+              const token = localStorage.getItem('pets_token');
+              if (!token) return;
+              try {
+                const res = await fetch(`/api/pets/${petId}`, {
+                  method: 'DELETE',
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                  fetchPets(); // Refresh pets after soft-deleting
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }}
             onUpdatePetVaccines={handleUpdatePetVaccines}
           />
         )}

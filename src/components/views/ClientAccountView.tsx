@@ -9,6 +9,8 @@ interface ClientAccountViewProps {
   appointments: Appointment[];
   onBookVaccine: () => void;
   onAddPet: (petFormData: FormData) => void;
+  onEditPet: (petId: string, petFormData: FormData) => void;
+  onDeletePet: (petId: string) => void;
   onUpdatePetVaccines: (petId: string, vaccines: VaccineRecord[]) => void;
 }
 
@@ -18,10 +20,13 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
   appointments,
   onBookVaccine,
   onAddPet,
+  onEditPet,
+  onDeletePet,
   onUpdatePetVaccines,
 }) => {
   const [selectedPetId, setSelectedPetId] = useState<string>(pets[0]?.id || '');
-  const [isAddPetModalOpen, setIsAddPetModalOpen] = useState(pets.length === 0);
+  const [isPetModalOpen, setIsPetModalOpen] = useState(pets.length === 0);
+  const [editingPetId, setEditingPetId] = useState<string | null>(null);
   const [newPetName, setNewPetName] = useState('');
   const [newPetSpecies, setNewPetSpecies] = useState<'Canino' | 'Felino' | 'Equino' | 'Bovino'>('Canino');
   const [newPetBreed, setNewPetBreed] = useState('');
@@ -48,7 +53,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
     onUpdatePetVaccines(activePet.id, updated);
   };
 
-  const handleCreatePet = (e: React.FormEvent) => {
+  const handleSavePet = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPetName.trim()) return;
 
@@ -61,8 +66,40 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
       formData.append('photo', newPetPhoto);
     }
 
-    onAddPet(formData);
-    setIsAddPetModalOpen(false);
+    if (editingPetId) {
+      onEditPet(editingPetId, formData);
+    } else {
+      onAddPet(formData);
+    }
+
+    closePetModal();
+  };
+
+  const openAddPetModal = () => {
+    setEditingPetId(null);
+    setNewPetName('');
+    setNewPetSpecies('Canino');
+    setNewPetBreed('');
+    setNewPetAge('');
+    setNewPetPhoto(null);
+    setPhotoPreview(null);
+    setIsPetModalOpen(true);
+  };
+
+  const openEditPetModal = (pet: Pet) => {
+    setEditingPetId(pet.id);
+    setNewPetName(pet.name);
+    setNewPetSpecies(pet.species as any);
+    setNewPetBreed(pet.breed || '');
+    setNewPetAge(pet.age || '');
+    setNewPetPhoto(null);
+    setPhotoPreview(pet.photo || null);
+    setIsPetModalOpen(true);
+  };
+
+  const closePetModal = () => {
+    setIsPetModalOpen(false);
+    setEditingPetId(null);
     setNewPetName('');
     setNewPetBreed('');
     setNewPetAge('');
@@ -94,7 +131,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
             Mis Mascotas
           </h3>
           <button
-            onClick={() => setIsAddPetModalOpen(true)}
+            onClick={openAddPetModal}
             className="text-xs font-bold text-[#436900] hover:underline flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-base">add_circle</span>
@@ -137,8 +174,8 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
 
           {/* Add Pet Button */}
           <button
-            onClick={() => setIsAddPetModalOpen(true)}
-            className="flex flex-col items-center justify-center gap-1.5 shrink-0 min-w-[76px] group focus:outline-none"
+            onClick={openAddPetModal}
+            className="flex flex-col items-center gap-1.5 shrink-0 min-w-[76px] group focus:outline-none"
           >
             <div className="w-18 h-18 rounded-full bg-[#f6f3f2] border-2 border-dashed border-[#737a66] flex items-center justify-center group-hover:border-[#436900] group-hover:bg-[#c7f173]/20 transition-all">
               <span className="material-symbols-outlined text-[#737a66] group-hover:text-[#436900] text-3xl">
@@ -244,7 +281,34 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
 
       {/* Active Pet Profile Card (Max) */}
       {activePet && (
-        <section className="bg-white rounded-2xl shadow-ambient border border-[#c3c9b3]/30 overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-ambient border border-[#c3c9b3]/30 overflow-hidden relative">
+          {/* Edit/Delete Actions */}
+          <div className="absolute top-3 right-4 flex gap-2 z-10">
+            <button
+              onClick={() => openEditPetModal(activePet)}
+              className="w-8 h-8 rounded-full bg-black/40 text-white backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+              title="Editar Mascota"
+            >
+              <span className="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm(`¿Estás seguro de que quieres ocultar a ${activePet.name}? (Se mantendrá el historial médico)`)) {
+                  onDeletePet(activePet.id);
+                  // Default back to the first available pet
+                  const remaining = pets.filter(p => p.id !== activePet.id);
+                  if (remaining.length > 0) {
+                    setSelectedPetId(remaining[0].id);
+                  }
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-[#ba1a1a]/80 text-white backdrop-blur-sm flex items-center justify-center hover:bg-[#ba1a1a] transition-colors"
+              title="Eliminar Mascota"
+            >
+              <span className="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+          
           {/* Pet Cover Banner */}
           <div className="h-44 sm:h-52 w-full relative">
             <img
@@ -401,20 +465,20 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
         </section>
       )}
 
-      {/* Add New Pet Modal */}
-      {isAddPetModalOpen && (
+      {/* Add/Edit Pet Modal */}
+      {isPetModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            onClick={() => setIsAddPetModalOpen(false)}
+            onClick={closePetModal}
           />
           <div className="relative bg-white rounded-2xl p-6 shadow-2xl max-w-md w-full z-10 border border-[#c3c9b3]">
             <h3 className="font-headline font-bold text-lg text-[#436900] mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined">pets</span>
-              Registrar Nueva Mascota
+              {editingPetId ? 'Editar Mascota' : 'Registrar Nueva Mascota'}
             </h3>
 
-            <form onSubmit={handleCreatePet} className="space-y-3.5">
+            <form onSubmit={handleSavePet} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-[#434938] mb-1">
                   Nombre de la Mascota *
@@ -517,7 +581,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
               <div className="pt-4 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsAddPetModalOpen(false)}
+                  onClick={closePetModal}
                   className="px-4 py-2 text-xs font-bold text-[#737a66] hover:text-[#1b1c1c]"
                 >
                   Cancelar
@@ -526,7 +590,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
                   type="submit"
                   className="px-5 py-2 text-xs font-bold bg-[#8fc63d] text-[#111f00] rounded-lg hover:bg-[#9fd74d]"
                 >
-                  Guardar Mascota
+                  {editingPetId ? 'Guardar Cambios' : 'Guardar Mascota'}
                 </button>
               </div>
             </form>

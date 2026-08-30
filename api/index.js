@@ -119,7 +119,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/pets', authenticateToken, async (req, res) => {
   try {
     const result = await db.execute({
-      sql: 'SELECT * FROM pets WHERE user_id = ?',
+      sql: 'SELECT * FROM pets WHERE user_id = ? AND (is_deleted IS NULL OR is_deleted = 0)',
       args: [req.user.id]
     });
     res.json(result.rows);
@@ -158,6 +158,65 @@ app.post('/api/pets', authenticateToken, upload.single('photo'), async (req, res
   } catch (error) {
     console.error('Error uploading pet:', error);
     res.status(500).json({ error: 'Error al dar de alta la mascota' });
+  }
+});
+
+// Pets - Update Pet
+app.put('/api/pets/:id', authenticateToken, upload.single('photo'), async (req, res) => {
+  try {
+    const { name, species, breed, age } = req.body;
+    const petId = req.params.id;
+
+    // Verify ownership
+    const petCheck = await db.execute({
+      sql: 'SELECT * FROM pets WHERE id = ? AND user_id = ?',
+      args: [petId, req.user.id]
+    });
+
+    if (petCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Mascota no encontrada o no autorizada' });
+    }
+
+    let photoUrl = petCheck.rows[0].photo;
+
+    if (req.file) {
+      try {
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+        const result = await cloudinary.uploader.upload(dataURI, { folder: 'pets2' });
+        photoUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('Error subiendo nueva imagen a Cloudinary:', uploadError);
+      }
+    }
+
+    await db.execute({
+      sql: 'UPDATE pets SET name = ?, species = ?, breed = ?, age = ?, photo = ? WHERE id = ? AND user_id = ?',
+      args: [name, species, breed, age, photoUrl, petId, req.user.id]
+    });
+
+    res.json({ success: true, pet: { id: petId, name, species, breed, age, photo: photoUrl } });
+  } catch (error) {
+    console.error('Error actualizando mascota:', error);
+    res.status(500).json({ error: 'Error al actualizar la mascota' });
+  }
+});
+
+// Pets - Soft Delete Pet
+app.delete('/api/pets/:id', authenticateToken, async (req, res) => {
+  try {
+    const petId = req.params.id;
+    
+    // Soft delete sets is_deleted to 1
+    await db.execute({
+      sql: 'UPDATE pets SET is_deleted = 1 WHERE id = ? AND user_id = ?',
+      args: [petId, req.user.id]
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error eliminando mascota:', error);
+    res.status(500).json({ error: 'Error al eliminar la mascota' });
   }
 });
 

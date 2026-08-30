@@ -62,6 +62,12 @@ export async function initDb() {
     // Column likely already exists, ignore error
   }
 
+  try {
+    await db.execute("ALTER TABLE pets ADD COLUMN is_deleted BOOLEAN DEFAULT 0");
+  } catch (e) {
+    // Column already exists, ignore
+  }
+
   await db.execute(`
     CREATE TABLE IF NOT EXISTS push_subscriptions (
       id TEXT PRIMARY KEY,
