@@ -188,6 +188,7 @@ export default function App() {
         currentTab={currentTab}
         onSelectTab={handleSelectTab}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Emergency 24hs Rapid Modal */}

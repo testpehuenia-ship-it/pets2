@@ -10,6 +10,7 @@ interface NavigationDrawerProps {
   currentTab: TabType;
   onSelectTab: (tab: TabType) => void;
   onOpenEmergency: () => void;
+  onLogout: () => void;
 }
 
 export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
@@ -20,6 +21,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   currentTab,
   onSelectTab,
   onOpenEmergency,
+  onLogout,
 }) => {
   if (!isOpen) return null;
 
@@ -99,6 +101,25 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
             );
           })}
         </div>
+
+        {/* User Actions */}
+        {user && (
+          <div className="px-4 pb-2">
+            <button
+              onClick={() => {
+                onClose();
+                onLogout();
+              }}
+              className="w-full text-left px-3.5 py-3 rounded-xl flex items-center gap-3.5 transition-all text-[#ba1a1a] hover:bg-[#ffdad6]/40"
+            >
+              <span className="material-symbols-outlined text-2xl">logout</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold leading-tight">Cerrar Sesión</div>
+                <div className="text-[11px] font-normal truncate">Salir de tu cuenta</div>
+              </div>
+            </button>
+          </div>
+        )}
 
         {/* Urgent Emergency Call Button */}
         <div className="p-4 bg-[#ffdad6]/40 border-t border-[#ffdad6] m-4 rounded-xl">
