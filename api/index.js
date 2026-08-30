@@ -136,11 +136,15 @@ app.post('/api/pets', authenticateToken, upload.single('photo'), async (req, res
     let photoUrl = '';
 
     if (req.file) {
-      // Subir buffer a Cloudinary
-      const b64 = Buffer.from(req.file.buffer).toString('base64');
-      const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
-      const result = await cloudinary.uploader.upload(dataURI, { folder: 'pets2' });
-      photoUrl = result.secure_url;
+      try {
+        // Subir buffer a Cloudinary
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+        const result = await cloudinary.uploader.upload(dataURI, { folder: 'pets2' });
+        photoUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('Error subiendo imagen a Cloudinary (se guardará sin foto):', uploadError);
+      }
     }
 
     const petId = 'pet_' + Date.now();

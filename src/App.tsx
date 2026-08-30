@@ -13,6 +13,7 @@ import { ClientAccountView } from './components/views/ClientAccountView';
 import { AdminDashboardView } from './components/views/AdminDashboardView';
 import { TeamView } from './components/views/TeamView';
 import { AuthModal } from './components/AuthModal';
+import { InstallBanner } from './components/InstallBanner';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<any>(() => {
@@ -272,6 +273,9 @@ export default function App() {
 
       {/* Bottom Navigation Bar (Mobile) */}
       <BottomNavBar currentTab={currentTab} onSelectTab={handleSelectTab} />
+      
+      {/* PWA Install Banner */}
+      <InstallBanner />
     </div>
   );
 }

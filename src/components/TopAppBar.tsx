@@ -47,7 +47,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-7">
+        <nav className="hidden lg:flex items-center gap-3 xl:gap-7">
           <button
             onClick={() => onSelectTab('inicio')}
             className={`font-semibold text-sm transition-all pb-1 ${
@@ -108,7 +108,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onSelectTab('admin')}
-            className={`hidden md:flex items-center gap-1.5 font-bold text-xs transition-colors ${
+            className={`hidden lg:flex items-center gap-1.5 font-bold text-xs transition-colors ${
               currentTab === 'admin'
                 ? 'text-[#436900]'
                 : 'text-[#737a66] hover:text-[#436900]'
@@ -119,7 +119,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
           </button>
 
           {user && (
-            <div className="hidden md:flex items-center gap-3 border-l border-[#c3c9b3]/30 pl-4 ml-2">
+            <div className="hidden lg:flex items-center gap-3 border-l border-[#c3c9b3]/30 pl-4 ml-2">
               <div className="flex flex-col items-end">
                 <span className="text-xs font-bold text-[#1b1c1c]">{user.name}</span>
                 <button
@@ -138,7 +138,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
 
           <button
             onClick={() => onSelectTab('reservas')}
-            className="hidden md:flex bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] px-5 py-2.5 rounded-xl font-bold text-xs items-center gap-2 transition-all shadow-sm active:scale-95"
+            className="hidden lg:flex bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] px-5 py-2.5 rounded-xl font-bold text-xs items-center gap-2 transition-all shadow-sm active:scale-95"
           >
             <span className="material-symbols-outlined text-base">calendar_month</span>
             RESERVAR TURNO
@@ -147,7 +147,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
           {/* Mobile Only Action */}
           <button
             onClick={() => onSelectTab('reservas')}
-            className="md:hidden bg-[#8fc63d] text-[#111f00] p-2 rounded-lg shadow-sm"
+            className="lg:hidden bg-[#8fc63d] text-[#111f00] p-2 rounded-lg shadow-sm"
           >
              <span className="material-symbols-outlined text-lg">calendar_month</span>
           </button>
