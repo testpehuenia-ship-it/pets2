@@ -31,8 +31,8 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     { id: 'auxilios', label: 'Primeros Auxilios', icon: 'medical_services', desc: 'Guía rápida de emergencias' },
     { id: 'cuenta', label: 'Mi Cuenta / Mascotas', icon: 'account_circle', desc: 'Perfil de Max, Luna y vacunas' },
     { id: 'equipo', label: 'Equipo PETS & Contacto', icon: 'stethoscope', desc: 'Veterinarios, clínica y sedes' },
-    { id: 'admin', label: 'Panel Administrativo', icon: 'dashboard_customize', desc: 'Métricas, turnos del día y campo' },
-  ] as const;
+    ...(user?.email === 'admin@pets.com' ? [{ id: 'admin' as TabType, label: 'Panel Administrativo', icon: 'dashboard_customize', desc: 'Métricas, turnos del día y campo' }] : []),
+  ];
 
   return (
     <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200">

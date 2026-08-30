@@ -208,6 +208,7 @@ export default function App() {
       <main className="flex-1 pb-20 md:pb-12">
         {currentTab === 'inicio' && (
           <HomeView
+            user={currentUser}
             onSelectTab={handleSelectTab}
             onOpenEmergency={() => setIsEmergencyOpen(true)}
           />

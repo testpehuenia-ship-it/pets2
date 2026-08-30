@@ -4,15 +4,13 @@ import { CLINIC_IMAGES } from '../../data/initialData';
 import { HeroSlider } from '../HeroSlider';
 
 interface HomeViewProps {
+  user?: any;
   onSelectTab: (tab: TabType) => void;
   onOpenEmergency: () => void;
   onSelectCategory?: (category: 'mascotas' | 'campo') => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({
-  onSelectTab,
-  onOpenEmergency,
-}) => {
+export const HomeView: React.FC<HomeViewProps> = ({ user, onSelectTab, onOpenEmergency }) => {
   return (
     <div className="animate-in fade-in duration-300">
       {/* Hero Section */}
@@ -332,9 +330,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <button onClick={() => onSelectTab('equipo')} className="hover:text-[#436900] underline">
               Sedes y Contacto
             </button>
-            <button onClick={() => onSelectTab('admin')} className="hover:text-[#436900] underline">
-              Acceso Administrativo
-            </button>
+            {user?.email === 'admin@pets.com' && (
+              <button onClick={() => onSelectTab('admin')} className="hover:text-[#436900] underline">
+                Acceso Administrativo
+              </button>
+            )}
           </div>
 
           <p className="text-xs text-[#737a66] text-center md:text-right">

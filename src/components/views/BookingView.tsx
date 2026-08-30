@@ -169,16 +169,22 @@ END:VCALENDAR`;
               
               {pets.length > 0 && !showOtherAnimal ? (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {pets.map((pet) => (
-                    <button
-                      key={pet.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedAnimal(pet.name);
-                      }}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900] transition-all group"
-                    >
-                      <div className="w-14 h-14 rounded-full overflow-hidden mb-2 border-2 border-transparent group-hover:border-[#8fc63d]">
+                  {pets.map((pet) => {
+                    const isSelected = selectedAnimal === pet.name;
+                    return (
+                      <button
+                        key={pet.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAnimal(pet.name);
+                        }}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all group ${
+                          isSelected
+                            ? 'border-[#436900] bg-[#c7f173]/25 ring-2 ring-[#8fc63d]/30 font-bold shadow-xs'
+                            : 'border-[#c3c9b3]/40 bg-[#f6f3f2] hover:border-[#436900]'
+                        }`}
+                      >
+                        <div className={`w-14 h-14 rounded-full overflow-hidden mb-2 border-2 ${isSelected ? 'border-[#8fc63d]' : 'border-transparent group-hover:border-[#8fc63d]'}`}>
                         <img 
                           src={pet.photo || CLINIC_IMAGES.petMaxPark} 
                           alt={pet.name} 
@@ -186,9 +192,12 @@ END:VCALENDAR`;
                           onError={(e) => { e.currentTarget.src = CLINIC_IMAGES.petMaxPark; }}
                         />
                       </div>
-                      <span className="font-bold text-sm text-[#1b1c1c] group-hover:text-[#436900] truncate w-full px-1">{pet.name}</span>
-                    </button>
-                  ))}
+                        <span className={`text-sm truncate w-full px-1 ${isSelected ? 'font-bold text-[#436900]' : 'font-semibold text-[#1b1c1c] group-hover:text-[#436900]'}`}>
+                          {pet.name}
+                        </span>
+                      </button>
+                    );
+                  })}
                   
                   {/* Otra mascota button */}
                   <button

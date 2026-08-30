@@ -106,17 +106,19 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
 
         {/* Right Side: Admin Link, Action Button & User Profile */}
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => onSelectTab('admin')}
-            className={`hidden lg:flex items-center gap-1.5 font-bold text-xs transition-colors ${
-              currentTab === 'admin'
-                ? 'text-[#436900]'
-                : 'text-[#737a66] hover:text-[#436900]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-lg">grid_view</span>
-            Panel Admin
-          </button>
+          {user?.email === 'admin@pets.com' && (
+            <button
+              onClick={() => onSelectTab('admin')}
+              className={`hidden lg:flex items-center gap-1.5 font-bold text-xs transition-colors ${
+                currentTab === 'admin'
+                  ? 'text-[#436900]'
+                  : 'text-[#737a66] hover:text-[#436900]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">grid_view</span>
+              Panel Admin
+            </button>
+          )}
 
           {user && (
             <div className="hidden lg:flex items-center gap-3 border-l border-[#c3c9b3]/30 pl-4 ml-2">
