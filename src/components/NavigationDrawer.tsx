@@ -3,6 +3,8 @@ import { TabType } from '../types';
 import { CLINIC_IMAGES } from '../data/initialData';
 
 interface NavigationDrawerProps {
+  user?: any;
+  pets?: Pet[];
   isOpen: boolean;
   onClose: () => void;
   currentTab: TabType;
@@ -11,6 +13,8 @@ interface NavigationDrawerProps {
 }
 
 export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
+  user,
+  pets = [],
   isOpen,
   onClose,
   currentTab,
@@ -42,16 +46,12 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
         <div className="p-6 bg-[#f0eded] border-b border-[#c3c9b3]/30 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#8fc63d]">
-                <img
-                  src={CLINIC_IMAGES.ownerMaria}
-                  alt="Maria"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#8fc63d] bg-[#c7f173] text-[#324f00] flex items-center justify-center font-headline font-bold text-xl">
+                {user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
-                <h3 className="font-headline font-bold text-base text-[#1b1c1c]">Maria González</h3>
-                <span className="text-xs text-[#434938] font-medium">Cliente PETS</span>
+                <h3 className="font-headline font-bold text-base text-[#1b1c1c]">{user?.name || 'Invitado'}</h3>
+                <span className="text-xs text-[#434938] font-medium">{user ? 'Cliente PETS' : 'Bienvenido'}</span>
               </div>
             </div>
             <button
@@ -61,9 +61,11 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
               <span className="material-symbols-outlined text-xl">close</span>
             </button>
           </div>
-          <p className="text-xs text-[#434938] bg-white/70 px-2.5 py-1.5 rounded-md border border-[#c3c9b3]/20">
-            🐾 2 Mascotas registradas: <strong className="text-[#1b1c1c]">Max</strong> y <strong className="text-[#1b1c1c]">Luna</strong>
-          </p>
+          {user && (
+            <p className="text-xs text-[#434938] bg-white/70 px-2.5 py-1.5 rounded-md border border-[#c3c9b3]/20">
+              🐾 {pets.length} Mascotas registradas{pets.length > 0 ? `: ${pets.map(p => p.name).join(', ')}` : ''}
+            </p>
+          )}
         </div>
 
         {/* Navigation list */}

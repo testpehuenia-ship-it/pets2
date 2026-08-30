@@ -28,7 +28,7 @@ export default function App() {
 
   // Core App State
   const [pets, setPets] = useState<Pet[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [fieldAlerts, setFieldAlerts] = useState(INITIAL_FIELD_ALERTS);
 
   // Notification badge counter for active appointments
@@ -65,11 +65,28 @@ export default function App() {
     }
   };
 
+  const fetchAppointments = async () => {
+    const token = localStorage.getItem('pets_token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/appointments', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAppointments(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleAuthSuccess = (user: any) => {
     setCurrentUser(user);
     // Intentar suscribirse a notificaciones al iniciar sesión exitosamente
     subscribeToPushNotifications();
     fetchPets();
+    fetchAppointments();
     if (pendingTab) {
       setCurrentTab(pendingTab);
       setPendingTab(null);
@@ -82,6 +99,7 @@ export default function App() {
     localStorage.removeItem('pets_token');
     setCurrentUser(null);
     setPets([]);
+    setAppointments([]);
     setCurrentTab('inicio');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -90,6 +108,7 @@ export default function App() {
     if (currentUser) {
       subscribeToPushNotifications();
       fetchPets();
+      fetchAppointments();
     }
   }, [currentUser]);
 
@@ -161,6 +180,8 @@ export default function App() {
 
       {/* Side Navigation Drawer (Mobile) */}
       <NavigationDrawer
+        user={currentUser}
+        pets={pets}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         currentTab={currentTab}
