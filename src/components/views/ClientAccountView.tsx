@@ -63,7 +63,7 @@ export const ClientAccountView: React.FC<ClientAccountViewProps> = ({
     formData.append('breed', newPetBreed || 'Mestizo');
     formData.append('age', newPetAge || '1 Año');
     if (newPetPhoto) {
-      formData.append('photo', newPetPhoto);
+      formData.append('photo', newPetPhoto, 'pet.jpg');
     }
 
     if (editingPetId) {
