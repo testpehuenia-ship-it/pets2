@@ -35,7 +35,7 @@ export const FirstAidView: React.FC<FirstAidViewProps> = ({ onOpenEmergency, onG
     const speciesLabel = SPECIES_OPTIONS.find(s => s.id === selectedSpecies)?.label || 'Desconocida';
 
     try {
-      const res = await fetch('http://localhost:3001/api/first-aid', {
+      const res = await fetch('/api/first-aid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery, species: speciesLabel })
