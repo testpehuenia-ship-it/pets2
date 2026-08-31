@@ -48,16 +48,18 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-3 xl:gap-7">
-          <button
-            onClick={() => onSelectTab('inicio')}
-            className={`font-semibold text-sm transition-all pb-1 ${
-              currentTab === 'inicio'
-                ? 'text-[#436900] border-b-2 border-[#436900]'
-                : 'text-[#434938] hover:text-[#436900]'
-            }`}
-          >
-            Inicio
-          </button>
+          {user?.email !== 'admin@pets.com' && (
+            <button
+              onClick={() => onSelectTab('inicio')}
+              className={`font-semibold text-sm transition-all pb-1 ${
+                currentTab === 'inicio'
+                  ? 'text-[#436900] border-b-2 border-[#436900]'
+                  : 'text-[#434938] hover:text-[#436900]'
+              }`}
+            >
+              Inicio
+            </button>
+          )}
 
           <button
             onClick={() => onSelectTab('reservas')}
@@ -70,16 +72,18 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
             Reservar Turno
           </button>
 
-          <button
-            onClick={() => onSelectTab('auxilios')}
-            className={`font-semibold text-sm transition-all pb-1 ${
-              currentTab === 'auxilios'
-                ? 'text-[#436900] border-b-2 border-[#436900]'
-                : 'text-[#434938] hover:text-[#436900]'
-            }`}
-          >
-            Primeros Auxilios
-          </button>
+          {user?.email !== 'admin@pets.com' && (
+            <button
+              onClick={() => onSelectTab('auxilios')}
+              className={`font-semibold text-sm transition-all pb-1 ${
+                currentTab === 'auxilios'
+                  ? 'text-[#436900] border-b-2 border-[#436900]'
+                  : 'text-[#434938] hover:text-[#436900]'
+              }`}
+            >
+              Primeros Auxilios
+            </button>
+          )}
 
           <button
             onClick={() => onSelectTab('cuenta')}
@@ -92,16 +96,18 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
             Mi Cuenta
           </button>
 
-          <button
-            onClick={() => onSelectTab('equipo')}
-            className={`font-semibold text-sm transition-all pb-1 ${
-              currentTab === 'equipo'
-                ? 'text-[#436900] border-b-2 border-[#436900]'
-                : 'text-[#434938] hover:text-[#436900]'
-            }`}
-          >
-            Equipo y Contacto
-          </button>
+          {user?.email !== 'admin@pets.com' && (
+            <button
+              onClick={() => onSelectTab('equipo')}
+              className={`font-semibold text-sm transition-all pb-1 ${
+                currentTab === 'equipo'
+                  ? 'text-[#436900] border-b-2 border-[#436900]'
+                  : 'text-[#434938] hover:text-[#436900]'
+              }`}
+            >
+              Equipo y Contacto
+            </button>
+          )}
         </nav>
 
         {/* Right Side: Admin Link, Action Button & User Profile */}

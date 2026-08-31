@@ -25,14 +25,21 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const navItems = [
+  const baseNavItems = [
     { id: 'inicio', label: 'Inicio', icon: 'home', desc: 'Página principal y bienvenida' },
     { id: 'reservas', label: 'Reservar Turno', icon: 'calendar_month', desc: 'Agenda tu cita en 4 pasos' },
     { id: 'auxilios', label: 'Primeros Auxilios', icon: 'medical_services', desc: 'Guía rápida de emergencias' },
     { id: 'cuenta', label: 'Mi Cuenta / Mascotas', icon: 'account_circle', desc: 'Perfil de Max, Luna y vacunas' },
     { id: 'equipo', label: 'Equipo PETS & Contacto', icon: 'stethoscope', desc: 'Veterinarios, clínica y sedes' },
-    ...(user?.email === 'admin@pets.com' ? [{ id: 'admin' as TabType, label: 'Panel Administrativo', icon: 'dashboard_customize', desc: 'Métricas, turnos del día y campo' }] : []),
   ];
+
+  const navItems = user?.email === 'admin@pets.com' 
+    ? [
+        { id: 'reservas', label: 'Reservar Turno', icon: 'calendar_month', desc: 'Agenda tu cita en 4 pasos' },
+        { id: 'cuenta', label: 'Mi Cuenta / Mascotas', icon: 'account_circle', desc: 'Perfil de Max, Luna y vacunas' },
+        { id: 'admin' as TabType, label: 'Panel Administrativo', icon: 'dashboard_customize', desc: 'Métricas, turnos del día y campo' }
+      ]
+    : baseNavItems;
 
   return (
     <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200">

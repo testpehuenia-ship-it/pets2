@@ -28,8 +28,8 @@ export default function App() {
   const [preselectedDoctorId, setPreselectedDoctorId] = useState<string | null>(null);
 
   // Core App State
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
   const [fieldAlerts, setFieldAlerts] = useState(INITIAL_FIELD_ALERTS);
 
   // EMR & Billing State
@@ -328,7 +328,7 @@ export default function App() {
       </main>
 
       {/* Bottom Navigation Bar (Mobile) */}
-      <BottomNavBar currentTab={currentTab} onSelectTab={handleSelectTab} />
+      <BottomNavBar user={currentUser} currentTab={currentTab} onSelectTab={handleSelectTab} />
       
       {/* PWA Install Banner */}
       <InstallBanner />
