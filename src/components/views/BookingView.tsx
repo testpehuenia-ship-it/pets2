@@ -16,9 +16,9 @@ export const BookingView: React.FC<BookingViewProps> = ({
   onGoToAccount,
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [selectedAnimal, setSelectedAnimal] = useState<string>('Perro');
+  const [selectedAnimal, setSelectedAnimal] = useState<string>('');
   const [showOtherAnimal, setShowOtherAnimal] = useState<boolean>(false);
-  const [selectedService, setSelectedService] = useState<string>('Consulta General');
+  const [selectedService, setSelectedService] = useState<string>('');
   
   // Find initial doctor if passed
   const defaultDoc = INITIAL_STAFF.find((s) => s.id === initialDoctorId) || INITIAL_STAFF[3]; // Dra Ana Silva
@@ -177,6 +177,7 @@ END:VCALENDAR`;
                         type="button"
                         onClick={() => {
                           setSelectedAnimal(pet.name);
+                          if (selectedService) setCurrentStep(2);
                         }}
                         className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all group ${
                           isSelected
@@ -219,7 +220,10 @@ END:VCALENDAR`;
                       <button
                         key={item.label}
                         type="button"
-                        onClick={() => setSelectedAnimal(item.label)}
+                        onClick={() => {
+                          setSelectedAnimal(item.label);
+                          if (selectedService) setCurrentStep(2);
+                        }}
                         className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all text-center group ${
                           isSelected
                             ? 'border-[#436900] bg-[#c7f173]/25 ring-2 ring-[#8fc63d]/30 font-bold shadow-xs'
@@ -254,7 +258,10 @@ END:VCALENDAR`;
                     <button
                       key={srv.title}
                       type="button"
-                      onClick={() => setSelectedService(srv.title)}
+                      onClick={() => {
+                        setSelectedService(srv.title);
+                        if (selectedAnimal) setCurrentStep(2);
+                      }}
                       className={`text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${
                         isSelected
                           ? 'border-[#436900] bg-[#c7f173]/25 ring-2 ring-[#8fc63d]/30 font-bold shadow-xs'
@@ -285,8 +292,13 @@ END:VCALENDAR`;
             <div className="flex justify-end pt-4 border-t border-[#c3c9b3]/20">
               <button
                 type="button"
+                disabled={!selectedAnimal || !selectedService}
                 onClick={() => setCurrentStep(2)}
-                className="bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] font-bold text-sm px-7 py-3 rounded-lg shadow-sm active:scale-95 transition-all"
+                className={`font-bold text-sm px-7 py-3 rounded-lg shadow-sm transition-all ${
+                  selectedAnimal && selectedService
+                    ? 'bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] active:scale-95'
+                    : 'bg-[#e0e3d8] text-[#737a66] cursor-not-allowed'
+                }`}
               >
                 Continuar
               </button>
