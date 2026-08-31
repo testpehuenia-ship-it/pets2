@@ -37,6 +37,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const emergenciesCount = appointments.filter((a) => a.emergency || a.status === 'emergencia').length;
   const todayCount = appointments.length;
 
+  const newClientsCount = 0; // Or calculate if you have clients list, using 0 since clients array isn't here
+  const fieldAlertsCount = fieldAlerts.length;
+
   const filteredAppointments = appointments.filter((apt) => {
     if (selectedStatusFilter === 'emergencia') return apt.emergency || apt.status === 'emergencia';
     return true;
@@ -85,44 +88,58 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* Metrics Grid */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
         {/* Metric 1: Pacientes Hoy */}
-        <div className="bg-[#f0eded] p-5 rounded-2xl flex flex-col justify-center items-center border border-[#c3c9b3]/40 shadow-xs">
+        <button 
+          onClick={() => setSelectedStatusFilter('todos')}
+          className={`p-5 rounded-2xl flex flex-col justify-center items-center border shadow-xs transition-colors ${
+            selectedStatusFilter === 'todos' ? 'bg-[#c7f173] border-[#8fc63d]' : 'bg-[#f0eded] border-[#c3c9b3]/40 hover:bg-[#e4e2e1]'
+          }`}
+        >
           <span className="font-headline text-3xl md:text-4xl font-bold text-[#436900]">
-            {40 + todayCount}
+            {todayCount}
           </span>
           <span className="text-xs md:text-sm font-semibold text-[#434938] text-center mt-1">
             Pacientes Hoy
           </span>
-        </div>
+        </button>
 
         {/* Metric 2: Emergencias */}
-        <div className="bg-[#ffdad6] p-5 rounded-2xl flex flex-col justify-center items-center border border-[#ba1a1a]/25 shadow-xs">
+        <button 
+          onClick={() => setSelectedStatusFilter('emergencia')}
+          className={`p-5 rounded-2xl flex flex-col justify-center items-center border shadow-xs transition-colors ${
+            selectedStatusFilter === 'emergencia' ? 'bg-[#ffb4ab] border-[#ba1a1a]' : 'bg-[#ffdad6] border-[#ba1a1a]/25 hover:bg-[#ffb4ab]'
+          }`}
+        >
           <span className="font-headline text-3xl md:text-4xl font-bold text-[#ba1a1a]">
-            {emergenciesCount > 0 ? emergenciesCount : 3}
+            {emergenciesCount}
           </span>
-          <span className="text-xs md:text-sm font-semibold text-[#93000a] text-center mt-1">
+          <span className="text-xs md:text-sm font-semibold text-[#ba1a1a] text-center mt-1">
             Emergencias
           </span>
-        </div>
+        </button>
 
         {/* Metric 3: Nuevos Clientes */}
-        <div className="bg-[#c7f173] p-5 rounded-2xl flex flex-col justify-center items-center border border-[#8fc63d]/40 shadow-xs">
-          <span className="font-headline text-3xl md:text-4xl font-bold text-[#4f6e00]">
-            8
+        <button 
+          className="bg-[#c7f173] p-5 rounded-2xl flex flex-col justify-center items-center border border-[#8fc63d]/50 shadow-xs hover:bg-[#b5e062] transition-colors"
+        >
+          <span className="font-headline text-3xl md:text-4xl font-bold text-[#324f00]">
+            {newClientsCount}
           </span>
           <span className="text-xs md:text-sm font-semibold text-[#4f6e00] text-center mt-1">
             Nuevos Clientes
           </span>
-        </div>
+        </button>
 
         {/* Metric 4: Alertas Campo */}
-        <div className="bg-[#d9ad89]/50 p-5 rounded-2xl flex flex-col justify-center items-center border border-[#7a5739]/30 shadow-xs">
+        <button 
+          className="bg-[#ffdcc1] p-5 rounded-2xl flex flex-col justify-center items-center border border-[#7a5739]/25 shadow-xs hover:bg-[#ffcca8] transition-colors"
+        >
           <span className="font-headline text-3xl md:text-4xl font-bold text-[#604024]">
-            {fieldAlerts.length}
+            {fieldAlertsCount}
           </span>
           <span className="text-xs md:text-sm font-semibold text-[#604024] text-center mt-1">
             Alertas Campo
           </span>
-        </div>
+        </button>
       </section>
 
       {/* Main Grid: Turnos + Alertas & Gestión */}

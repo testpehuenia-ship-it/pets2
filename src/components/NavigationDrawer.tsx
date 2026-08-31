@@ -36,7 +36,6 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   const navItems = user?.email === 'admin@pets.com' 
     ? [
         { id: 'reservas', label: 'Reservar Turno', icon: 'calendar_month', desc: 'Agenda tu cita en 4 pasos' },
-        { id: 'cuenta', label: 'Mi Cuenta / Mascotas', icon: 'account_circle', desc: 'Perfil de Max, Luna y vacunas' },
         { id: 'admin' as TabType, label: 'Panel Administrativo', icon: 'dashboard_customize', desc: 'Métricas, turnos del día y campo' }
       ]
     : baseNavItems;

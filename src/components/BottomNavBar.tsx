@@ -22,7 +22,6 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const tabs = user?.email === 'admin@pets.com'
     ? [
         { id: 'reservas', label: 'Reservas', icon: 'calendar_month' },
-        { id: 'cuenta', label: 'Mi Cuenta', icon: 'account_circle' },
         { id: 'admin', label: 'Admin', icon: 'dashboard_customize' },
       ]
     : baseTabs;

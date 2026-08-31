@@ -89,10 +89,13 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAppointments(data);
+        setAppointments(data.length > 0 ? data : INITIAL_APPOINTMENTS);
+      } else {
+        setAppointments(INITIAL_APPOINTMENTS);
       }
     } catch (e) {
       console.error(e);
+      setAppointments(INITIAL_APPOINTMENTS);
     }
   };
 

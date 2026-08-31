@@ -85,16 +85,18 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
             </button>
           )}
 
-          <button
-            onClick={() => onSelectTab('cuenta')}
-            className={`font-semibold text-sm transition-all pb-1 ${
-              currentTab === 'cuenta'
-                ? 'text-[#436900] border-b-2 border-[#436900]'
-                : 'text-[#434938] hover:text-[#436900]'
-            }`}
-          >
-            Mi Cuenta
-          </button>
+          {user?.email !== 'admin@pets.com' && (
+            <button
+              onClick={() => onSelectTab('cuenta')}
+              className={`font-semibold text-sm transition-all pb-1 ${
+                currentTab === 'cuenta'
+                  ? 'text-[#436900] border-b-2 border-[#436900]'
+                  : 'text-[#434938] hover:text-[#436900]'
+              }`}
+            >
+              Mi Cuenta
+            </button>
+          )}
 
           {user?.email !== 'admin@pets.com' && (
             <button
