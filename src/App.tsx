@@ -218,6 +218,7 @@ export default function App() {
           <BookingView
             user={currentUser}
             pets={pets}
+            appointments={appointments}
             initialDoctorId={preselectedDoctorId}
             onBookingConfirmed={handleBookingConfirmed}
             onGoToAccount={() => handleSelectTab('cuenta')}

@@ -5,6 +5,7 @@ import { INITIAL_STAFF, CLINIC_IMAGES } from '../../data/initialData';
 interface BookingViewProps {
   user?: any;
   pets?: Pet[];
+  appointments?: Appointment[];
   initialDoctorId?: string | null;
   onBookingConfirmed: (newApt: Appointment) => void;
   onGoToAccount: () => void;
@@ -13,6 +14,7 @@ interface BookingViewProps {
 export const BookingView: React.FC<BookingViewProps> = ({
   user,
   pets = [],
+  appointments = [],
   initialDoctorId,
   onBookingConfirmed,
   onGoToAccount,
@@ -113,9 +115,11 @@ END:VCALENDAR`;
   };
 
   const handleSendWhatsApp = () => {
-    const clinicPhone = '5491112345678'; // Dummy clinic number
+    // We send it to the client's own phone number so they save the receipt
+    const cleanPhone = phone.replace(/^\+?54\s?9?\s?/, '').replace(/\D/g, '');
+    const clientPhone = `549${cleanPhone}`; 
     const message = `Hola! Reservé un turno para ${selectedAnimal} (${selectedService}) con ${selectedDoctor.name} para el ${selectedDay} Oct, ${selectedTime} hs. Mi número de ticket es ${confirmedTicket}. Mis datos: ${fullName}.`;
-    window.open(`https://wa.me/${clinicPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${clientPhone}?text=${encodeURIComponent(message)}`, '_blank');
     onGoToAccount();
   };
 
@@ -455,25 +459,37 @@ END:VCALENDAR`;
                 </div>
               </div>
 
-              {/* Time Slots */}
               <h3 className="font-headline font-bold text-xs text-[#1b1c1c] uppercase tracking-wider mb-2.5">
                 Horarios Disponibles ({selectedDay} de Octubre)
               </h3>
               <div className="grid grid-cols-3 gap-2.5">
                 {timeSlots.map((slot) => {
                   const isSelected = selectedTime === slot;
+                  
+                  // Check if this slot is already booked for this doctor on this day
+                  const isOccupied = appointments.some(
+                    (apt) => 
+                      apt.doctorName === selectedDoctor.name && 
+                      apt.date === `${selectedDay} Octubre 2024` && 
+                      apt.time === slot &&
+                      apt.status !== 'cancelado'
+                  );
+
                   return (
                     <button
                       key={slot}
                       type="button"
+                      disabled={isOccupied}
                       onClick={() => {
                         setSelectedTime(slot);
                         setCurrentStep(4);
                       }}
-                      className={`py-2.5 px-3 rounded-lg text-xs font-bold border transition-all ${
+                      className={`py-3 rounded-xl border font-bold text-sm transition-all ${
                         isSelected
-                          ? 'border-[#436900] bg-[#8fc63d] text-[#111f00] shadow-xs'
-                          : 'border-[#c3c9b3]/40 bg-white text-[#1b1c1c] hover:border-[#436900]'
+                          ? 'border-[#436900] bg-[#8fc63d] text-[#111f00] shadow-xs scale-105'
+                          : isOccupied
+                          ? 'border-[#e0e3d8] bg-[#f6f3f2] text-[#c3c9b3] cursor-not-allowed'
+                          : 'border-[#c3c9b3]/40 bg-[#ffffff] hover:border-[#436900] text-[#434938]'
                       }`}
                     >
                       {slot} hs
