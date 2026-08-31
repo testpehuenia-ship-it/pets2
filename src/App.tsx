@@ -44,7 +44,13 @@ export default function App() {
     { id: 'm4', name: 'Analgésico Inyectable (Dosis)', type: 'medicacion', price: 9000 },
   ]);
   const [records, setRecords] = useState<ClinicalRecord[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([
+    { id: 'inv-1', appointmentId: 'apt-1', date: new Date().toLocaleDateString(), total: 15000, paymentMethod: 'Efectivo', items: [] },
+    { id: 'inv-2', appointmentId: 'apt-2', date: new Date(Date.now() - 86400000).toLocaleDateString(), total: 25000, paymentMethod: 'T. Débito', items: [] },
+    { id: 'inv-3', appointmentId: 'apt-3', date: new Date(Date.now() - 172800000).toLocaleDateString(), total: 45000, paymentMethod: 'T. Crédito', items: [] },
+    { id: 'inv-4', appointmentId: 'apt-4', date: new Date().toLocaleDateString(), total: 12000, paymentMethod: 'Mercado Pago', items: [] },
+    { id: 'inv-5', appointmentId: 'apt-5', date: new Date(Date.now() - 86400000 * 3).toLocaleDateString(), total: 35000, paymentMethod: 'Efectivo', items: [] },
+  ]);
 
   // Notification badge counter for active appointments
   const notificationCount = appointments.filter(

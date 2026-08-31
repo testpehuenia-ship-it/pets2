@@ -15,6 +15,7 @@ export const CatalogManager: React.FC<CatalogManagerProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'servicio' | 'medicacion' | 'facturacion'>('facturacion');
+  const [chartType, setChartType] = useState<'barras' | 'pastel' | 'tendencia'>('pastel');
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
 
   const filteredCatalog = catalog.filter((c) => c.type === activeTab);
@@ -71,6 +72,17 @@ export const CatalogManager: React.FC<CatalogManagerProps> = ({
   });
 
   const totalMethods = Object.values(methodTotals).reduce((a, b) => a + b, 0);
+
+  // Helper for Pie Chart (conic-gradient)
+  const colors = ['#8fc63d', '#1b1c1c', '#009ee3', '#ff9800'];
+  let currentAngle = 0;
+  const conicGradient = Object.entries(methodTotals).map(([_, total], i) => {
+    const percentage = totalMethods > 0 ? (total / totalMethods) * 100 : 0;
+    const start = currentAngle;
+    const end = currentAngle + percentage;
+    currentAngle = end;
+    return `${colors[i]} ${start}% ${end}%`;
+  }).join(', ');
   
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
@@ -148,29 +160,74 @@ export const CatalogManager: React.FC<CatalogManagerProps> = ({
                 </div>
               </div>
 
-              {/* Medios de Pago */}
+              {/* Medios de Pago y Gráficos */}
               <div className="bg-white p-5 rounded-xl shadow-sm border border-[#e0e3d8]">
-                <h3 className="font-bold text-sm mb-4">Ingresos por Medio de Pago (Global)</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(methodTotals).map(([method, total]) => (
-                    <div key={method} className="flex justify-between items-center p-2 rounded bg-[#f6f3f2]">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-sm">Distribución por Medio de Pago</h3>
+                  <div className="flex bg-[#f6f3f2] p-1 rounded-lg">
+                    <button onClick={() => setChartType('barras')} className={`px-2 py-1 text-xs font-bold rounded-md transition-colors ${chartType === 'barras' ? 'bg-white shadow-sm text-[#1b1c1c]' : 'text-[#737a66]'}`}>Barras</button>
+                    <button onClick={() => setChartType('pastel')} className={`px-2 py-1 text-xs font-bold rounded-md transition-colors ${chartType === 'pastel' ? 'bg-white shadow-sm text-[#1b1c1c]' : 'text-[#737a66]'}`}>Pastel</button>
+                    <button onClick={() => setChartType('tendencia')} className={`px-2 py-1 text-xs font-bold rounded-md transition-colors ${chartType === 'tendencia' ? 'bg-white shadow-sm text-[#1b1c1c]' : 'text-[#737a66]'}`}>Evolución</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {Object.entries(methodTotals).map(([method, total], i) => (
+                    <div key={method} className="flex justify-between items-center p-2 rounded bg-[#f6f3f2] border-l-4" style={{ borderColor: colors[i] }}>
                       <span className="text-xs font-semibold">{method}</span>
-                      <span className="text-sm font-bold text-[#436900]">${total.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-[#1b1c1c]">${total.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
                 
-                {/* Visual Bar for Payment Methods */}
-                {totalMethods > 0 && (
-                  <div className="mt-4 flex h-3 rounded-full overflow-hidden w-full bg-gray-100">
-                    {Object.entries(methodTotals).map(([method, total], i) => {
-                      const colors = ['bg-[#8fc63d]', 'bg-[#1b1c1c]', 'bg-[#009ee3]', 'bg-[#ff9800]'];
-                      return total > 0 ? (
-                        <div key={method} style={{ width: `${(total / totalMethods) * 100}%` }} className={colors[i]} title={`${method}: $${total}`} />
-                      ) : null;
-                    })}
-                  </div>
-                )}
+                <div className="mt-4 flex justify-center items-end h-40 w-full relative bg-[#fbf9f8] rounded-xl border border-[#e5e1db] p-4 overflow-hidden">
+                  {totalMethods === 0 ? (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#a6a9a3]">Sin datos para mostrar</div>
+                  ) : chartType === 'barras' ? (
+                    <div className="flex items-end justify-around w-full h-full gap-4">
+                      {Object.entries(methodTotals).map(([method, total], i) => {
+                        const max = Math.max(...Object.values(methodTotals), 1);
+                        return (
+                          <div key={method} className="flex flex-col items-center flex-1 h-full justify-end group relative">
+                            <div className="opacity-0 group-hover:opacity-100 absolute -top-6 bg-[#1b1c1c] text-white text-[10px] py-1 px-2 rounded font-bold transition-opacity whitespace-nowrap z-10">
+                              {((total / totalMethods) * 100).toFixed(1)}%
+                            </div>
+                            <div className="w-full max-w-[40px] rounded-t-sm transition-all duration-500 hover:opacity-80" style={{ height: `${(total / max) * 100}%`, backgroundColor: colors[i] }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : chartType === 'pastel' ? (
+                    <div className="relative w-32 h-32 rounded-full shadow-inner animate-in zoom-in duration-500" style={{ background: `conic-gradient(${conicGradient})` }}>
+                      <div className="absolute inset-2 bg-[#fbf9f8] rounded-full flex items-center justify-center">
+                        <span className="text-xs font-bold text-[#1b1c1c]">Total<br/>${totalMethods.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <svg className="w-full h-full overflow-visible animate-in fade-in" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <path d={`M 0,100 ${Object.values(methodTotals).map((val, i) => {
+                        const x = (i / (Object.keys(methodTotals).length - 1)) * 100;
+                        const max = Math.max(...Object.values(methodTotals), 1);
+                        const y = 100 - ((val / max) * 90);
+                        return `L ${x},${y}`;
+                      }).join(' ')} L 100,100 Z`} fill="#8fc63d" opacity="0.2" />
+                      
+                      <polyline points={Object.values(methodTotals).map((val, i) => {
+                        const x = (i / (Object.keys(methodTotals).length - 1)) * 100;
+                        const max = Math.max(...Object.values(methodTotals), 1);
+                        const y = 100 - ((val / max) * 90);
+                        return `${x},${y}`;
+                      }).join(' ')} fill="none" stroke="#436900" strokeWidth="2" />
+                      
+                      {Object.values(methodTotals).map((val, i) => {
+                        const x = (i / (Object.keys(methodTotals).length - 1)) * 100;
+                        const max = Math.max(...Object.values(methodTotals), 1);
+                        const y = 100 - ((val / max) * 90);
+                        return <circle key={i} cx={x} cy={y} r="3" fill="#1b1c1c" className="hover:r-5 transition-all" />;
+                      })}
+                    </svg>
+                  )}
+                </div>
               </div>
 
               {/* Graficos CSS */}
