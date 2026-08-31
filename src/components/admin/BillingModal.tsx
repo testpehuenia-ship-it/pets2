@@ -18,13 +18,15 @@ export const BillingModal: React.FC<BillingModalProps> = ({
   const [selectedServices, setSelectedServices] = useState<CatalogItem[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<CatalogItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'Efectivo' | 'T. Débito' | 'T. Crédito' | 'Mercado Pago'>('Efectivo');
+  const [extraCharge, setExtraCharge] = useState<number>(0);
 
   const services = catalog.filter((c) => c.type === 'servicio');
   const medications = catalog.filter((c) => c.type === 'medicacion');
 
   const servicesTotal = selectedServices.reduce((sum, item) => sum + item.price, 0);
   const medicationsTotal = selectedMedications.reduce((sum, item) => sum + item.price, 0);
-  const grandTotal = servicesTotal + medicationsTotal;
+  const subTotal = servicesTotal + medicationsTotal;
+  const grandTotal = subTotal + extraCharge;
 
   const toggleItem = (item: CatalogItem, type: 'servicio' | 'medicacion') => {
     if (type === 'servicio') {
@@ -165,6 +167,12 @@ export const BillingModal: React.FC<BillingModalProps> = ({
                   {selectedServices.length === 0 && selectedMedications.length === 0 && (
                     <div className="text-center italic text-[#737a66]">No se seleccionaron ítems.</div>
                   )}
+                  {extraCharge !== 0 && (
+                    <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-dashed border-[#c3c9b3]">
+                      <span>{extraCharge > 0 ? 'Recargo / Adicional' : 'Descuento'}</span>
+                      <span>${extraCharge.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between font-display font-bold text-xl border-t border-[#c3c9b3] pt-4 text-[#436900]">
@@ -189,6 +197,25 @@ export const BillingModal: React.FC<BillingModalProps> = ({
                       {method}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-[#c3c9b3]/50 shadow-sm print:hidden">
+                <h3 className="font-bold text-sm mb-3">Recargo o Descuento</h3>
+                <div className="flex flex-col">
+                  <label className="text-xs text-[#434938] mb-1">
+                    Agrega un importe libre (ej. recargo por tarjeta de crédito o un descuento en negativo)
+                  </label>
+                  <div className="flex items-center bg-[#f6f3f2] rounded-lg border border-[#e5e1db] focus-within:border-[#436900] px-3 overflow-hidden">
+                    <span className="font-bold text-[#434938]">$</span>
+                    <input 
+                      type="number" 
+                      value={extraCharge === 0 ? '' : extraCharge} 
+                      onChange={(e) => setExtraCharge(Number(e.target.value))}
+                      placeholder="0"
+                      className="w-full bg-transparent p-3 outline-none text-sm font-semibold text-[#1b1c1c]"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
