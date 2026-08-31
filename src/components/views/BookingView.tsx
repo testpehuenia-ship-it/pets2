@@ -3,6 +3,7 @@ import { Appointment, StaffMember, Pet } from '../../types';
 import { INITIAL_STAFF, CLINIC_IMAGES } from '../../data/initialData';
 
 interface BookingViewProps {
+  user?: any;
   pets?: Pet[];
   initialDoctorId?: string | null;
   onBookingConfirmed: (newApt: Appointment) => void;
@@ -10,6 +11,7 @@ interface BookingViewProps {
 }
 
 export const BookingView: React.FC<BookingViewProps> = ({
+  user,
   pets = [],
   initialDoctorId,
   onBookingConfirmed,
@@ -26,9 +28,12 @@ export const BookingView: React.FC<BookingViewProps> = ({
   
   const [selectedDay, setSelectedDay] = useState<number>(3);
   const [selectedTime, setSelectedTime] = useState<string>('10:30');
-  const [fullName, setFullName] = useState<string>('Maria González');
-  const [phone, setPhone] = useState<string>('+54 9 11 1234-5678');
-  const [reason, setReason] = useState<string>('Chequeo anual y control de vacunas.');
+  
+  // Extract local phone without country code for display
+  const initialPhone = user?.phone ? user.phone.replace(/^\+?54\s?9?\s?/, '') : '';
+  const [fullName, setFullName] = useState<string>(user?.name || '');
+  const [phone, setPhone] = useState<string>(initialPhone);
+  const [reason, setReason] = useState<string>('');
   const [confirmedTicket, setConfirmedTicket] = useState<string | null>(null);
 
   const animalOptions = [
@@ -76,7 +81,7 @@ export const BookingView: React.FC<BookingViewProps> = ({
       time: selectedTime,
       status: 'confirmado',
       ownerName: fullName,
-      ownerPhone: phone,
+      ownerPhone: `+54 9 ${phone.replace(/^\+?54\s?9?\s?/, '').trim()}`,
       notes: reason,
     };
 
@@ -105,6 +110,13 @@ END:VCALENDAR`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleSendWhatsApp = () => {
+    const clinicPhone = '5491112345678'; // Dummy clinic number
+    const message = `Hola! Reservé un turno para ${selectedAnimal} (${selectedService}) con ${selectedDoctor.name} para el ${selectedDay} Oct, ${selectedTime} hs. Mi número de ticket es ${confirmedTicket}. Mis datos: ${fullName}.`;
+    window.open(`https://wa.me/${clinicPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    onGoToAccount();
   };
 
   const progressPercent = confirmedTicket
@@ -260,6 +272,7 @@ END:VCALENDAR`;
                       type="button"
                       onClick={() => {
                         setSelectedService(srv.title);
+                        setReason(srv.title);
                         if (selectedAnimal) setCurrentStep(2);
                       }}
                       className={`text-left p-4 rounded-xl border transition-all flex items-start gap-3.5 ${
@@ -517,16 +530,21 @@ END:VCALENDAR`;
 
                 <div>
                   <label className="block text-xs font-semibold text-[#434938] mb-1">
-                    Teléfono
+                    Teléfono (sin 0 ni 15)
                   </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+54 9 11 1234-5678"
-                    className="w-full bg-[#ffffff] border border-[#c3c9b3] rounded-lg p-3 text-sm text-[#1b1c1c] focus:border-[#436900] focus:ring-1 focus:ring-[#436900] outline-none"
-                  />
+                  <div className="flex bg-[#ffffff] border border-[#c3c9b3] rounded-lg overflow-hidden focus-within:border-[#436900] focus-within:ring-1 focus-within:ring-[#436900]">
+                    <div className="flex items-center justify-center bg-[#f6f3f2] px-3 border-r border-[#c3c9b3] text-sm text-[#434938] font-medium select-none">
+                      +54 9
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="11 1234-5678"
+                      className="w-full p-3 text-sm text-[#1b1c1c] outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -618,10 +636,11 @@ END:VCALENDAR`;
 
               <button
                 type="button"
-                onClick={onGoToAccount}
-                className="border-2 border-[#7a5739] text-[#7a5739] font-bold text-xs py-2.5 px-5 rounded-lg hover:bg-[#7a5739]/10 transition-colors"
+                onClick={handleSendWhatsApp}
+                className="bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold text-xs py-3 px-5 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 uppercase"
               >
-                Ver en Mi Cuenta
+                <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" className="w-5 h-5 invert" />
+                Enviar a WhatsApp
               </button>
 
               <button
