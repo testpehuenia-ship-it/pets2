@@ -17,7 +17,7 @@ export const BillingModal: React.FC<BillingModalProps> = ({
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedServices, setSelectedServices] = useState<CatalogItem[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<CatalogItem[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<'Efectivo' | 'Tarjeta'>('Efectivo');
+  const [paymentMethod, setPaymentMethod] = useState<'Efectivo' | 'T. Débito' | 'T. Crédito' | 'Mercado Pago'>('Efectivo');
 
   const services = catalog.filter((c) => c.type === 'servicio');
   const medications = catalog.filter((c) => c.type === 'medicacion');
@@ -175,23 +175,20 @@ export const BillingModal: React.FC<BillingModalProps> = ({
 
               <div className="bg-white p-4 rounded-xl border border-[#c3c9b3]/50 shadow-sm print:hidden">
                 <h3 className="font-bold text-sm mb-3">Método de Pago</h3>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setPaymentMethod('Efectivo')}
-                    className={`flex-1 py-3 rounded-lg border font-bold text-sm transition-colors ${
-                      paymentMethod === 'Efectivo' ? 'bg-[#1b1c1c] text-white border-[#1b1c1c]' : 'bg-[#f6f3f2] text-[#434938] hover:border-[#1b1c1c]'
-                    }`}
-                  >
-                    Efectivo
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod('Tarjeta')}
-                    className={`flex-1 py-3 rounded-lg border font-bold text-sm transition-colors ${
-                      paymentMethod === 'Tarjeta' ? 'bg-[#1b1c1c] text-white border-[#1b1c1c]' : 'bg-[#f6f3f2] text-[#434938] hover:border-[#1b1c1c]'
-                    }`}
-                  >
-                    Tarjeta / Transferencia
-                  </button>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['Efectivo', 'T. Débito', 'T. Crédito', 'Mercado Pago'] as const).map((method) => (
+                    <button
+                      key={method}
+                      onClick={() => setPaymentMethod(method)}
+                      className={`py-3 rounded-lg border font-bold text-sm transition-colors ${
+                        paymentMethod === method 
+                          ? 'bg-[#1b1c1c] text-white border-[#1b1c1c] shadow-sm' 
+                          : 'bg-[#f6f3f2] text-[#434938] hover:border-[#1b1c1c] border-transparent'
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

@@ -544,6 +544,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         <CatalogManager
           catalog={catalog}
           setCatalog={setCatalog}
+          invoices={invoices}
           onClose={() => setActiveModal('none')}
         />
       )}
@@ -565,6 +566,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }}
           onSaveInvoice={(invoice) => {
             setInvoices([...invoices, invoice]);
+            onUpdateAppointmentStatus(activeFicha.id, 'completado');
           }}
           onClose={() => setActiveFicha(null)}
         />

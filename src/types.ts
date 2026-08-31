@@ -102,6 +102,6 @@ export interface Invoice {
   appointmentId: string;
   date: string;
   total: number;
-  paymentMethod: 'Efectivo' | 'Tarjeta';
+  paymentMethod: 'Efectivo' | 'T. Débito' | 'T. Crédito' | 'Mercado Pago';
   items: CatalogItem[];
 }
