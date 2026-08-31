@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { subscribeToPushNotifications } from './utils/push';
-import { TabType, Pet, Appointment, VaccineRecord } from './types';
+import { TabType, Pet, Appointment, VaccineRecord, CatalogItem, ClinicalRecord, Invoice } from './types';
 import { INITIAL_PETS, INITIAL_APPOINTMENTS, INITIAL_FIELD_ALERTS } from './data/initialData';
 import { TopAppBar } from './components/TopAppBar';
 import { BottomNavBar } from './components/BottomNavBar';
@@ -31,6 +31,20 @@ export default function App() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [fieldAlerts, setFieldAlerts] = useState(INITIAL_FIELD_ALERTS);
+
+  // EMR & Billing State
+  const [catalog, setCatalog] = useState<CatalogItem[]>([
+    { id: 'c1', name: 'Consulta General', type: 'servicio', price: 15000 },
+    { id: 'c2', name: 'Consulta Especialista', type: 'servicio', price: 25000 },
+    { id: 'c3', name: 'Ecografía Abdominal', type: 'servicio', price: 35000 },
+    { id: 'c4', name: 'Vacuna Sextuple', type: 'servicio', price: 18000 },
+    { id: 'm1', name: 'Antiparasitario Interno (hasta 10kg)', type: 'medicacion', price: 5000 },
+    { id: 'm2', name: 'Antiparasitario Interno (10-20kg)', type: 'medicacion', price: 8500 },
+    { id: 'm3', name: 'Antibiótico Inyectable (Dosis)', type: 'medicacion', price: 12000 },
+    { id: 'm4', name: 'Analgésico Inyectable (Dosis)', type: 'medicacion', price: 9000 },
+  ]);
+  const [records, setRecords] = useState<ClinicalRecord[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
 
   // Notification badge counter for active appointments
   const notificationCount = appointments.filter(
@@ -300,6 +314,12 @@ export default function App() {
           <AdminDashboardView
             appointments={appointments}
             fieldAlerts={fieldAlerts}
+            catalog={catalog}
+            setCatalog={setCatalog}
+            records={records}
+            setRecords={setRecords}
+            invoices={invoices}
+            setInvoices={setInvoices}
             onOpenBooking={() => handleSelectTab('reservas')}
             onOpenEmergency={() => setIsEmergencyOpen(true)}
             onUpdateAppointmentStatus={handleUpdateAppointmentStatus}

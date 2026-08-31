@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { subscribeToPushNotifications } from '../utils/push';
 
 export const InstallBanner: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -43,6 +44,13 @@ export const InstallBanner: React.FC = () => {
       }
       setDeferredPrompt(null);
     }
+    // Also ask for notifications
+    subscribeToPushNotifications();
+  };
+
+  const handleCloseClick = () => {
+    setShowBanner(false);
+    subscribeToPushNotifications();
   };
 
   if (!showBanner || (!deferredPrompt && !isIOS)) return null;
@@ -54,16 +62,16 @@ export const InstallBanner: React.FC = () => {
           <img src="/vite.svg" alt="PETS App" className="w-full h-full object-contain" />
         </div>
         <div className="flex-1 text-center md:text-left">
-          <h4 className="font-bold text-[#c7f173] text-sm md:text-base">¡Instala la App PETS!</h4>
+          <h4 className="font-bold text-[#c7f173] text-sm md:text-base">¡Instala la App PETS y Activa Notificaciones!</h4>
           <p className="text-xs md:text-sm text-gray-300 mt-0.5">
             {isIOS 
-              ? 'Toca el ícono Compartir en Safari y selecciona "Añadir a inicio" para una mejor experiencia.' 
-              : 'Instala nuestra aplicación en tu pantalla de inicio para acceder más rápido.'}
+              ? 'Toca el ícono Compartir en Safari y selecciona "Añadir a inicio" para instalar. Luego, permite las notificaciones.' 
+              : 'Instala nuestra aplicación (Android/iOS) en tu pantalla de inicio para acceder más rápido y luego permite las notificaciones.'}
           </p>
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
           <button 
-            onClick={() => setShowBanner(false)}
+            onClick={handleCloseClick}
             className="flex-1 md:flex-none px-4 py-2 text-xs font-bold text-gray-300 hover:text-white transition-colors"
           >
             CERRAR

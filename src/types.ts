@@ -80,3 +80,28 @@ export interface FieldAlert {
   location: string;
   type: 'retraso' | 'alerta' | 'urgencia';
 }
+
+export interface CatalogItem {
+  id: string;
+  name: string;
+  type: 'servicio' | 'medicacion';
+  price: number;
+}
+
+export interface ClinicalRecord {
+  id: string;
+  appointmentId: string;
+  notes: string;
+  date: string;
+  services: CatalogItem[];
+  medications: CatalogItem[];
+}
+
+export interface Invoice {
+  id: string;
+  appointmentId: string;
+  date: string;
+  total: number;
+  paymentMethod: 'Efectivo' | 'Tarjeta';
+  items: CatalogItem[];
+}

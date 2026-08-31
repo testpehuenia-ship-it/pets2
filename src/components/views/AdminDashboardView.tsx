@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
-import { Appointment, FieldAlert } from '../../types';
+import { Appointment, FieldAlert, CatalogItem, ClinicalRecord, Invoice } from '../../types';
+import { CatalogManager } from '../admin/CatalogManager';
+import { FichaModal } from '../admin/FichaModal';
 
 interface AdminDashboardViewProps {
   appointments: Appointment[];
   fieldAlerts: FieldAlert[];
+  catalog: CatalogItem[];
+  setCatalog: (catalog: CatalogItem[]) => void;
+  records: ClinicalRecord[];
+  setRecords: (records: ClinicalRecord[]) => void;
+  invoices: Invoice[];
+  setInvoices: (invoices: Invoice[]) => void;
   onOpenBooking: () => void;
   onOpenEmergency: () => void;
   onUpdateAppointmentStatus: (id: string, status: Appointment['status']) => void;
@@ -12,12 +20,19 @@ interface AdminDashboardViewProps {
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   appointments,
   fieldAlerts,
+  catalog,
+  setCatalog,
+  records,
+  setRecords,
+  invoices,
+  setInvoices,
   onOpenBooking,
   onOpenEmergency,
   onUpdateAppointmentStatus,
 }) => {
-  const [activeModal, setActiveModal] = useState<'none' | 'fichas' | 'servicios' | 'agenda'>('none');
+  const [activeModal, setActiveModal] = useState<'none' | 'fichas' | 'servicios' | 'agenda' | 'catalogo'>('none');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<'todos' | 'hoy' | 'emergencia'>('todos');
+  const [activeFicha, setActiveFicha] = useState<Appointment | null>(null);
 
   const emergenciesCount = appointments.filter((a) => a.emergency || a.status === 'emergencia').length;
   const todayCount = appointments.length;
@@ -41,7 +56,14 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setActiveModal('catalogo')}
+              className="bg-[#1b1c1c] hover:bg-[#434938] text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 transition-all"
+            >
+              <span className="material-symbols-outlined text-base">inventory_2</span>
+              Administración
+            </button>
             <button
               onClick={onOpenBooking}
               className="bg-[#8fc63d] hover:bg-[#9fd74d] text-[#111f00] font-bold text-xs px-4 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 uppercase transition-all"
@@ -135,7 +157,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               return (
                 <div
                   key={apt.id}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all gap-3 ${
+                  onClick={() => setActiveFicha(apt)}
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all gap-3 cursor-pointer ${
                     isEmergency
                       ? 'bg-[#ffdad6] border-[#ba1a1a]/35'
                       : 'bg-white border-[#c3c9b3]/30 hover:border-[#8fc63d]'
@@ -177,7 +200,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
 
                   {/* Actions & Status Selector */}
-                  <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#c3c9b3]/20">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#c3c9b3]/20" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={apt.status}
                       onChange={(e) =>
@@ -498,6 +521,36 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {activeModal === 'catalogo' && (
+        <CatalogManager
+          catalog={catalog}
+          setCatalog={setCatalog}
+          onClose={() => setActiveModal('none')}
+        />
+      )}
+
+      {activeFicha && (
+        <FichaModal
+          appointment={activeFicha}
+          catalog={catalog}
+          onSaveRecord={(notes) => {
+            const newRecord: ClinicalRecord = {
+              id: `rec-${Date.now()}`,
+              appointmentId: activeFicha.id,
+              date: new Date().toLocaleDateString(),
+              notes,
+              services: [],
+              medications: []
+            };
+            setRecords([...records, newRecord]);
+          }}
+          onSaveInvoice={(invoice) => {
+            setInvoices([...invoices, invoice]);
+          }}
+          onClose={() => setActiveFicha(null)}
+        />
       )}
     </div>
   );
